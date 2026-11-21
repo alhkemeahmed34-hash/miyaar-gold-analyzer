@@ -1,352 +1,1712 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>تحليل عينات الذهب - الورشة</title>
-  <style>
-    .live-clock {
-      display:flex; justify-content:space-between; align-items:center; gap:12px;
-      padding:10px 12px; margin-bottom:12px; border:1px solid var(--border);
-      border-radius:10px; background:#1b1f27; color:var(--muted); font-size:.9rem;
-    }
-    .live-clock strong { color:var(--accent); font-size:1rem; direction:ltr; unicode-bidi:embed; }
-    @media (max-width:380px) { .live-clock {font-size:.78rem;} .live-clock strong {font-size:.9rem;} }
-    :root {
-      --bg: #111318;
-      --card: #1b1f27;
-      --accent: #eab308;
-      --accent-dark: #ca8a04;
-      --text: #f3f4f6;
-      --muted: #9ca3af;
-      --danger: #ef4444;
-      --ok: #22c55e;
-      --border: #2d3340;
-    }
-    * { box-sizing: border-box; font-family: Tahoma, Arial, sans-serif; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>تحليل عينات الذهب</title>
+<style>
+  :root {
+    --bg-main: #0f172a;
+    --bg-card: #1e293b;
+    --header-bg: #0b1120;
+    --header-text: #f1f5f9;
+    --gold-accent: #b45309;
+    --gold-light: #292524;
+    --border-color: #334155;
+    --border-pair: #64748b;
+    --text-primary: #f1f5f9;
+    --text-muted: #94a3b8;
+    --green-bg: #14532d;
+    --green-text: #bbf7d0;
+    --green-border: #166534;
+    --red-bg: #7f1d1d;
+    --red-text: #fecaca;
+    --red-border: #991b1b;
+    --calc-bg: #172033;
+    --row-pair-alt: #162032;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Tahoma, Arial, sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    padding: 10px;
+    line-height: 1.4;
+  }
+
+  .container {
+    max-width: 100%;
+    margin: 0 auto;
+  }
+
+  /* Top Bar */
+  .top-bar {
+    background: var(--header-bg);
+    color: var(--header-text);
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  }
+
+  .app-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #f8fafc;
+  }
+
+  .app-title span.badge {
+    background: #334155;
+    color: #e2e8f0;
+    border: 1px solid #475569;
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  .controls-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .date-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    padding: 5px 10px;
+    border-radius: 6px;
+  }
+
+  .date-group label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+    color: #cbd5e1;
+  }
+
+  .date-group input[type="date"] {
+    background: #0f172a;
+    color: #f8fafc;
+    border: 1px solid #475569;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    font-weight: 600;
+    color-scheme: dark;
+  }
+
+  /* Unified Dark Buttons (except Clear button) */
+  .btn {
+    border: 1px solid #475569;
+    border-radius: 6px;
+    padding: 7px 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background-color 0.15s, transform 0.1s;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+    background: #1e293b;
+    color: #f1f5f9;
+  }
+
+  .btn:hover {
+    background: #334155;
+  }
+
+  .btn:active {
+    transform: scale(0.98);
+  }
+
+  .btn-save,
+  .btn-export,
+  .btn-import,
+  .btn-view,
+  .btn-load {
+    background: #1e293b;
+    color: #f1f5f9;
+    border: 1px solid #475569;
+  }
+
+  /* Distinct Clear / Delete Button */
+  .btn-clear {
+    background: #991b1b;
+    color: #ffffff;
+    border: 1px solid #b91c1c;
+  }
+
+  .btn-clear:hover {
+    background: #b91c1c;
+  }
+
+  .btn-sm {
+    padding: 4px 8px;
+    font-size: 0.78rem;
+  }
+
+  /* Main Table Wrapper */
+  .table-card {
+    background: var(--bg-card);
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+    overflow: hidden;
+    margin-bottom: 16px;
+    border: 1px solid var(--border-color);
+  }
+
+  .table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table.analysis-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+    font-size: 0.85rem;
+    min-width: 1080px;
+    background-color: #1e293b;
+  }
+
+  /* Unified Dark Table Headers */
+  table.analysis-table th,
+  table.analysis-table th.col-input-hdr,
+  table.analysis-table th.col-calc-hdr,
+  table.analysis-table th.col-result-hdr {
+    background: #0f172a;
+    color: #e2e8f0;
+    font-weight: 600;
+    padding: 9px 4px;
+    border: 1px solid #334155;
+    font-size: 0.78rem;
+    line-height: 1.25;
+    vertical-align: middle;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+
+  table.analysis-table td {
+    border: 1px solid var(--border-color);
+    padding: 4px 3px;
+    vertical-align: middle;
+    height: 44px;
+    color: #f1f5f9;
+  }
+
+  /* Pair grouping visual separator */
+  tr.pair-end td {
+    border-bottom: 2px solid var(--border-pair);
+  }
+
+  tr.pair-group-2 {
+    background-color: var(--row-pair-alt);
+  }
+
+  /* Sticky First Column */
+  table.analysis-table th:first-child,
+  table.analysis-table td:first-child {
+    position: sticky;
+    right: 0;
+    z-index: 3;
+    background-color: #0f172a;
+    color: #e2e8f0;
+    font-weight: 700;
+    width: 42px;
+    min-width: 42px;
+    border-left: 2px solid var(--border-pair);
+  }
+
+  table.analysis-table th:first-child {
+    background-color: #0b1120;
+    z-index: 4;
+  }
+
+  /* Dark Inputs inside table */
+  .cell-input {
+    width: 100%;
+    min-width: 64px;
+    padding: 6px 4px;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 0.92rem;
+    font-weight: 600;
+    font-family: inherit;
+    color: #f8fafc;
+    background: #0f172a;
+    transition: border-color 0.15s, background-color 0.15s;
+  }
+
+  .cell-input::placeholder {
+    color: #475569;
+  }
+
+  .cell-input.name-input {
+    min-width: 85px;
+    font-weight: 500;
+  }
+
+  .cell-input:focus {
+    outline: none;
+    border-color: #94a3b8;
+    background: #020617;
+  }
+
+  /* Remove number spinners for cleaner mobile look */
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type=number] {
+    -moz-appearance: textfield;
+  }
+
+  /* Calculated & Status Cells (Unified Dark Slate) */
+  .calc-cell {
+    background-color: var(--calc-bg);
+    font-weight: 700;
+    font-size: 0.92rem;
+    min-width: 68px;
+    color: #e2e8f0;
+    direction: ltr;
+  }
+
+  .final-result-cell {
+    font-size: 1.02rem;
+    font-weight: 800;
+    background-color: #172033;
+    color: #f8fafc;
+    min-width: 76px;
+    direction: ltr;
+  }
+
+  .pair-diff-cell {
+    font-weight: 800;
+    font-size: 0.95rem;
+    min-width: 95px;
+    border-bottom: 2px solid var(--border-pair) !important;
+    background-color: #1e293b;
+  }
+
+  .status-cell {
+    font-weight: 700;
+    font-size: 0.82rem;
+    min-width: 98px;
+    white-space: nowrap;
+  }
+
+  /* State Colors (Muted Dark Green & Red for Status/Alerts) */
+  .state-ok {
+    background-color: var(--green-bg) !important;
+    color: var(--green-text) !important;
+  }
+
+  .state-bad {
+    background-color: var(--red-bg) !important;
+    color: var(--red-text) !important;
+  }
+
+  .input-bad {
+    background-color: var(--red-bg) !important;
+    color: var(--red-text) !important;
+    border-color: var(--red-border) !important;
+  }
+
+  .state-wait {
+    color: var(--text-muted);
+    font-weight: 500;
+    font-size: 0.78rem;
+  }
+
+  /* Auto-save indicator */
+  .status-strip {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 12px;
+    background: #0f172a;
+    border-top: 1px solid var(--border-color);
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+
+  .save-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #94a3b8;
+    font-weight: 600;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #22c55e;
+    display: inline-block;
+  }
+
+  /* History Section */
+  .history-section {
+    background: var(--bg-card);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    padding: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
+
+  .history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .history-header h2 {
+    font-size: 1.05rem;
+    color: #f1f5f9;
+  }
+
+  .history-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 10px;
+  }
+
+  .history-card {
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 10px;
+    background: #0f172a;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .history-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #f1f5f9;
+  }
+
+  .history-card-meta {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  .history-card-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 4px;
+  }
+
+  /* Modal for viewing archived analysis */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 6, 23, 0.8);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+  }
+
+  .modal-overlay.active {
+    display: flex;
+  }
+
+  .modal-box {
+    background: #1e293b;
+    border: 1px solid #475569;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 1150px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+  }
+
+  .modal-header {
+    background: #0b1120;
+    color: #f8fafc;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #334155;
+  }
+
+  .modal-body {
+    padding: 12px;
+    overflow: auto;
+  }
+
+  .modal-footer {
+    padding: 10px 16px;
+    border-top: 1px solid #334155;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    background: #0f172a;
+  }
+
+  /* Toast Notification */
+  .toast {
+    position: fixed;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #0b1120;
+    color: #f8fafc;
+    border: 1px solid #475569;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    z-index: 200;
+    opacity: 0;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  }
+
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+
+  @media (max-width: 768px) {
     body {
-      margin: 0;
-      padding: 14px;
-      background: var(--bg);
-      color: var(--text);
-    }
-    h1 {
-      font-size: 1.25rem;
-      margin: 0 0 12px;
-      color: var(--accent);
-      text-align: center;
-    }
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px;
-      margin-bottom: 12px;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-    }
-    label {
-      display: block;
-      font-size: 0.85rem;
-      color: var(--muted);
-      margin-bottom: 4px;
-    }
-    input, select, button {
-      width: 100%;
-      padding: 9px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      font-size: 0.95rem;
-    }
-    input, select {
-      background: #12151b;
-      color: var(--text);
-    }
-    button {
-      background: var(--accent);
-      color: #111;
-      font-weight: bold;
-      border: none;
-      cursor: pointer;
-    }
-    button:active { background: var(--accent-dark); }
-    .btn-row {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-top: 8px;
-    }
-    .btn-secondary { background: #374151; color: #fff; }
-    .btn-danger { background: var(--danger); color: #fff; }
-    .result-box {
-      margin-top: 10px;
-      padding: 10px;
-      border-radius: 8px;
-      background: #12151b;
-      border-right: 4px solid var(--accent);
-      line-height: 1.7;
-    }
-    .alert-box {
-      border-right-color: var(--danger);
-      color: #fecaca;
-      background: #2a1215;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.82rem;
-      margin-top: 8px;
-    }
-    th, td {
-      border: 1px solid var(--border);
       padding: 6px;
-      text-align: center;
     }
-    th { background: #242a36; color: var(--accent); }
-    .table-wrap { overflow-x: auto; }
-  </style>
+    .top-bar {
+      padding: 10px;
+    }
+    .app-title {
+      font-size: 1.05rem;
+    }
+    .btn {
+      padding: 6px 9px;
+      font-size: 0.8rem;
+    }
+  }
+
+  .summary-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .summary-box {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 8px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .summary-label {
+    font-size: 0.75rem;
+    color: #94a3b8;
+  }
+
+  .summary-val {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #f8fafc;
+    direction: ltr;
+    text-align: right;
+  }
+
+  .karat-sub {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: #94a3b8;
+    margin-top: 1px;
+    direction: rtl;
+  }
+
+  .history-search {
+    background: #0f172a;
+    color: #f1f5f9;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 0.82rem;
+    font-family: inherit;
+    min-width: 210px;
+  }
+
+  .history-search:focus {
+    outline: none;
+    border-color: #94a3b8;
+  }
+
+  @media print {
+    body { background: #fff !important; color: #000 !important; padding: 0 !important; }
+    .top-bar, .table-card, .history-section, .toast, #transferModal { display: none !important; }
+    .modal-overlay.active { position: static !important; background: none !important; display: block !important; padding: 0 !important; }
+    .modal-box { max-width: 100% !important; max-height: none !important; box-shadow: none !important; border: none !important; background: #fff !important; color: #000 !important; }
+    .modal-header .btn, .modal-footer { display: none !important; }
+    table.analysis-table { min-width: 100% !important; background: #fff !important; color: #000 !important; }
+    table.analysis-table th, table.analysis-table td { border: 1px solid #444 !important; color: #000 !important; background: #fff !important; }
+  }
+
+</style>
 </head>
 <body>
-  <div class="live-clock" aria-live="off">
-    <span id="liveDate">--/--/----</span>
-    <strong id="liveTime">--:--:--</strong>
+
+<div class="container">
+  <!-- Header & Controls -->
+  <header class="top-bar">
+    <div class="app-title">
+      <div style="display:flex; flex-direction:column; gap:2px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span>⚖️ برنامج تحليل عينات الذهب</span>
+          <span class="badge">ورشة الذهب</span>
+        </div>
+        <span style="font-size:0.68rem; font-weight:400; color:#94a3b8; opacity:0.85;">منشئ البرنامج: أحمد جعفر</span>
+      </div>
+    </div>
+
+    <div class="controls-bar">
+      <div class="date-group">
+        <label for="analysisDate">التاريخ والوقت:</label>
+        <input type="date" id="analysisDate">
+        <input type="time" id="analysisTime" style="background:#0f172a; color:#f8fafc; border:1px solid #475569; border-radius:4px; padding:4px 6px; font-size:0.88rem; font-family:inherit; font-weight:600; color-scheme:dark;">
+      </div>
+
+      <button type="button" class="btn btn-save" onclick="saveCurrentAnalysis()">💾 حفظ التحليل</button>
+      <button type="button" class="btn btn-export" onclick="exportBackup()">📤 تصدير نسخة احتياطية</button>
+      <button type="button" class="btn btn-import" onclick="document.getElementById('importFile').click()">📥 استيراد نسخة احتياطية</button>
+      <input type="file" id="importFile" accept=".json,application/json" style="display:none" onchange="importBackup(event)">
+      <button type="button" class="btn btn-view" onclick="openTransferModal()">🔄 نقل بين النسخ</button>
+      <button type="button" class="btn btn-clear" onclick="clearCurrentFields()">🗑️ تفريغ الخانات</button>
+    </div>
+  </header>
+
+  <!-- Smart Lab Summary Bar -->
+  <div class="summary-strip" id="labSummaryStrip">
+    <div class="summary-box">
+      <span class="summary-label">العينات المكتملة بالنتيجة</span>
+      <span class="summary-val" id="sumCompletedCount">0 / 6</span>
+    </div>
+    <div class="summary-box">
+      <span class="summary-label">متوسط النتيجة النهائية (‰)</span>
+      <span class="summary-val" id="sumAvgResult">—</span>
+    </div>
+    <div class="summary-box">
+      <span class="summary-label">العيار التقديري للمتوسط</span>
+      <span class="summary-val" id="sumEstimatedKarat">—</span>
+    </div>
+    <div class="summary-box">
+      <span class="summary-label">حالة أزواج العينات (فارق ≤ 1.5)</span>
+      <span class="summary-val" id="sumPairsHealth">—</span>
+    </div>
   </div>
-  <h1>نظام تحليل ومقارنة عينات الذهب</h1>
 
-  <div class="card">
-    <div class="grid">
-      <div>
-        <label>اسم / رقم العينة الأولى</label>
-        <input type="text" id="sampleAName" placeholder="عينة 1" />
-      </div>
-      <div>
-        <label>دقة / عيار العينة الأولى (من 1000)</label>
-        <input type="number" id="sampleAFiness" step="0.1" placeholder="مثال 875 أو 916" />
-      </div>
-      <div>
-        <label>اسم / رقم العينة الثانية (للمقارنة)</label>
-        <input type="text" id="sampleBName" placeholder="عينة 2" />
-      </div>
-      <div>
-        <label>دقة / عيار العينة الثانية (من 1000)</label>
-        <input type="number" id="sampleBFiness" step="0.1" placeholder="اختياري للمقارنة" />
-      </div>
-      <div>
-        <label>الوزن الإجمالي (جرام)</label>
-        <input type="number" id="weight" step="0.01" placeholder="مثال 12.50" />
-      </div>
-      <div>
-        <label>حد التنبيه المسموح (فرق الأجزاء)</label>
-        <input type="number" id="threshold" step="0.1" value="3.0" />
-      </div>
-    </div>
-
-    <div class="btn-row">
-      <button onclick="analyzeSample()">تحليل وحفظ</button>
-      <button class="btn-secondary" onclick="exportBackup()">تصدير نسخة</button>
-      <button class="btn-secondary" onclick="document.getElementById('importFile').click()">استيراد نسخة</button>
-    </div>
-    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(event)" />
-
-    <div id="output" class="result-box">أدخل بيانات العينة ثم اضغط "تحليل وحفظ".</div>
-  </div>
-
-  <div class="card">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <strong>السجل المحفوظ محلياً</strong>
-      <button class="btn-danger" style="width:auto; padding:6px 12px;" onclick="clearRecords()">مسح السجل</button>
-    </div>
-    <div class="table-wrap">
-      <table>
+  <!-- Main Horizontal Excel-Style Table -->
+  <div class="table-card">
+    <div class="table-responsive">
+      <table class="analysis-table" id="mainTable">
         <thead>
           <tr>
-            <th>الوقت</th>
-            <th>العينة 1</th>
-            <th>الدقة 1</th>
-            <th>العينة 2</th>
-            <th>الفرق / النقص</th>
-            <th>الحالة</th>
+            <th>رقم<br>العينة</th>
+            <th class="col-input-hdr">اسم العينة</th>
+            <th class="col-input-hdr">وزن العينة<br>الأصلي</th>
+            <th class="col-calc-hdr">الفضة المطلوبة<br>× 2.8</th>
+            <th class="col-input-hdr">الفضة<br>الفعلية</th>
+            <th class="col-input-hdr">وزن الذهب<br>مع الفضة</th>
+            <th class="col-input-hdr">بعد<br>الصبة</th>
+            <th class="col-calc-hdr">نقص<br>الصبة</th>
+            <th class="col-input-hdr">بعد<br>الجرور</th>
+            <th class="col-calc-hdr">نقص<br>الجرور</th>
+            <th class="col-input-hdr">بعد<br>الشولة</th>
+            <th class="col-result-hdr">الناتج<br>النهائي ‰</th>
+            <th class="col-calc-hdr">التحقق من<br>فارق العينات</th>
+            <th class="col-calc-hdr">العينات<br>قبل الشولة</th>
           </tr>
         </thead>
-        <tbody id="recordsBody"></tbody>
+        <tbody id="samplesBody">
+          <!-- 6 Rows generated dynamically by JS -->
+        </tbody>
       </table>
+    </div>
+    <div class="status-strip">
+      <div class="save-indicator">
+        <span class="dot"></span>
+        <span id="autoSaveStatus">الحفظ التلقائي نشط</span>
+      </div>
+      <div>اسحب الجدول أفقيًا عند الحاجة • يتم حفظ كل رقم فور إدخاله</div>
     </div>
   </div>
 
-  <script>
-    const STORAGE_KEY = 'gold_assay_records_v1';
+  <!-- Saved History Section -->
+  <section class="history-section">
+    <div class="history-header" style="flex-wrap:wrap; gap:8px;">
+      <h2>📁 سجل التحاليل المحفوظة (<span id="historyCount">0</span>)</h2>
+      <input type="text" id="historySearchInput" class="history-search" placeholder="🔎 بحث باسم العينة أو التاريخ..." oninput="renderHistory()">
+    </div>
+    <div id="historyList" class="history-list">
+      <!-- History cards rendered here -->
+    </div>
+  </section>
+</div>
 
-    // ساعة مباشرة تتبع وقت وتاريخ الهاتف تلقائياً.
-    function updateLiveClock() {
-      const now = new Date();
-      const dateEl = document.getElementById('liveDate');
-      const timeEl = document.getElementById('liveTime');
-      if (!dateEl || !timeEl) return;
-      dateEl.textContent = now.toLocaleDateString('ar-YE', {
-        weekday: 'short', year: 'numeric', month: '2-digit', day: '2-digit'
-      });
-      timeEl.textContent = now.toLocaleTimeString('ar-YE', {
-        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
+<!-- Modal to inspect saved record -->
+<div class="modal-overlay" id="viewModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="modalTitle">تفاصيل التحليل المحفوظ</h3>
+      <button type="button" class="btn btn-clear btn-sm" onclick="closeModal()">✖ إغلاق</button>
+    </div>
+    <div class="modal-body">
+      <div class="table-responsive" id="modalTableContainer"></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-save" onclick="window.print()">🖨️ طباعة / حفظ PDF</button>
+      <button type="button" class="btn btn-load" id="modalLoadBtn">↩️ استرجاع إلى الجدول الرئيسي</button>
+      <button type="button" class="btn btn-view" onclick="closeModal()">إغلاق</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- Modal for transferring data between app versions -->
+<div class="modal-overlay" id="transferModal">
+  <div class="modal-box" style="max-width: 720px;">
+    <div class="modal-header">
+      <h3>🔄 نقل العينات والسجل بين نسخ التطبيق</h3>
+      <button type="button" class="btn btn-clear btn-sm" onclick="closeTransferModal()">✖ إغلاق</button>
+    </div>
+    <div class="modal-body" style="display:flex; flex-direction:column; gap:12px;">
+      <p style="font-size:0.84rem; color:#cbd5e1; line-height:1.5;">
+        لنقل العينات الحالية والتحاليل المحفوظة من نسخة قديمة إلى نسخة جديدة (أو من متصفح لآخر): انسخ نص البيانات من النسخة القديمة والصقه هنا، أو اختر ملف النسخة الاحتياطية <strong>JSON</strong>.
+      </p>
+
+      <div style="display:flex; flex-wrap:wrap; gap:8px;">
+        <button type="button" class="btn btn-save btn-sm" onclick="copyBackupText()">📋 نسخ بيانات هذه النسخة</button>
+        <button type="button" class="btn btn-import btn-sm" onclick="document.getElementById('transferFileInput').click()">📂 اختيار ملف JSON</button>
+        <input type="file" id="transferFileInput" accept=".json,application/json,text/plain" style="display:none" onchange="handleTransferFile(event)">
+      </div>
+
+      <div>
+        <label for="transferTextarea" style="display:block; font-size:0.82rem; color:#94a3b8; margin-bottom:6px;">
+          نص بيانات النسخة (للتصدير بالنسخ أو اللصق للاستيراد):
+        </label>
+        <textarea id="transferTextarea" rows="7" dir="ltr" placeholder="الصق هنا نص النسخة الاحتياطية المنسوخ من النسخة السابقة..." style="width:100%; background:#0f172a; color:#f8fafc; border:1px solid #334155; border-radius:6px; padding:8px; font-family:monospace; font-size:0.78rem; resize:vertical;"></textarea>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:8px; font-size:0.82rem; color:#cbd5e1;">
+        <input type="checkbox" id="mergeHistoryCheckbox" checked style="width:16px; height:16px; accent-color:#22c55e;">
+        <label for="mergeHistoryCheckbox">دمج السجل المستورد مع السجل الحالي بدل استبداله (يمنع تكرار السجلات المتطابقة)</label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-save" onclick="applyTransferFromText()">✅ استيراد البيانات الملصقة</button>
+      <button type="button" class="btn btn-view" onclick="closeTransferModal()">إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast notification -->
+<div class="toast" id="toast"></div>
+
+<script>
+  const STORAGE_DRAFT_KEY = 'gold_workshop_current_draft_v1';
+  const STORAGE_HISTORY_KEY = 'gold_workshop_saved_history_v1';
+  const NUM_ROWS = 6;
+
+  // Default empty draft state
+
+  function getCurrentTimeHHMM() {
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
+    return `${hh}:${mm}`;
+  }
+
+
+  function getLocalDateISO() {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  // Keep the analysis date and time aligned with the phone clock.
+  // If the user manually edits either field, preserve that choice.
+  function updatePhoneDateTime() {
+    const dateInput = document.getElementById('analysisDate');
+    const timeInput = document.getElementById('analysisTime');
+    if (dateInput && dateInput.dataset.userEdited !== '1') dateInput.value = getLocalDateISO();
+    if (timeInput && timeInput.dataset.userEdited !== '1') timeInput.value = getCurrentTimeHHMM();
+  }
+
+  function startPhoneClock() {
+    const dateInput = document.getElementById('analysisDate');
+    const timeInput = document.getElementById('analysisTime');
+    if (dateInput) dateInput.addEventListener('input', () => { dateInput.dataset.userEdited = '1'; });
+    if (timeInput) timeInput.addEventListener('input', () => { timeInput.dataset.userEdited = '1'; });
+    updatePhoneDateTime();
+    setInterval(updatePhoneDateTime, 1000);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) updatePhoneDateTime();
+    });
+  }
+
+  function formatTimeArabic(hhmm, isoFallback) {
+    let timeStr = hhmm;
+    if (!timeStr && isoFallback) {
+      const d = new Date(isoFallback);
+      if (!isNaN(d.getTime())) {
+        timeStr = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+      }
+    }
+    if (!timeStr) return '';
+    const parts = timeStr.split(':');
+    if (parts.length < 2) return timeStr;
+    let h = parseInt(parts[0], 10);
+    const m = parts[1].slice(0, 2);
+    if (!Number.isFinite(h)) return timeStr;
+    const period = h >= 12 ? 'م' : 'ص';
+    const h12 = h % 12 === 0 ? 12 : h % 12;
+    return `${h12}:${m} ${period}`;
+  }
+
+  function createEmptyDraft() {
+    const today = getLocalDateISO();
+    const nowTime = getCurrentTimeHHMM();
+    const rows = [];
+    for (let i = 0; i < NUM_ROWS; i++) {
+      rows.push({
+        sampleNumber: i + 1,
+        sampleName: '',
+        originalWeight: '',
+        actualSilver: '',
+        goldWithSilver: '',
+        afterCasting: '',
+        afterRolling: '',
+        afterCupellation: ''
       });
     }
-    updateLiveClock();
-    setInterval(updateLiveClock, 1000);
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) updateLiveClock();
+    return { date: today, time: nowTime, rows };
+  }
+
+  let currentDraft = createEmptyDraft();
+  let savedHistory = [];
+
+  // Utility: parse finite float or return null
+  function parseNum(val) {
+    if (val === '' || val === null || val === undefined) return null;
+    const str = String(val).trim();
+    if (str === '') return null;
+    const num = Number(str);
+    return Number.isFinite(num) ? num : null;
+  }
+
+  // Format number safely for display without rounding internal state
+  function formatDisplay(num, decimals) {
+    if (num === null || num === undefined || !Number.isFinite(num)) return '—';
+    // Avoid -0.0
+    const fixed = num.toFixed(decimals);
+    return Number(fixed) === 0 ? (0).toFixed(decimals) : fixed;
+  }
+
+  // Show toast message
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(window._toastTimer);
+    window._toastTimer = setTimeout(() => {
+      toast.classList.remove('show');
+    }, 2600);
+  }
+
+  // Core calculation engine for all 6 rows (keeps exact precision internally)
+  
+  // Standard gold karat reference benchmarks in permille (‰)
+  const KARAT_BENCHMARKS = [
+    { karat: '24k', fineness: 999.0 },
+    { karat: '22k', fineness: 916.7 },
+    { karat: '21k', fineness: 875.0 },
+    { karat: '18k', fineness: 750.0 },
+    { karat: '14k', fineness: 583.3 }
+  ];
+
+  function estimateKaratInfo(permilleVal) {
+    if (permilleVal === null || !Number.isFinite(permilleVal) || permilleVal <= 0) return null;
+    let best = KARAT_BENCHMARKS[0];
+    let minDiff = Math.abs(permilleVal - best.fineness);
+    for (let i = 1; i < KARAT_BENCHMARKS.length; i++) {
+      const d = Math.abs(permilleVal - KARAT_BENCHMARKS[i].fineness);
+      if (d < minDiff) {
+        minDiff = d;
+        best = KARAT_BENCHMARKS[i];
+      }
+    }
+    const delta = permilleVal - best.fineness;
+    const sign = delta > 0 ? '+' : '';
+    return {
+      karat: best.karat,
+      benchmark: best.fineness,
+      deltaText: `${sign}${formatDisplay(delta, 1)}`
+    };
+  }
+
+  function updateLabSummary(computedRows, pairs) {
+    const validResults = computedRows
+      .map(c => c.finalResult)
+      .filter(v => v !== null && Number.isFinite(v));
+
+    const countEl = document.getElementById('sumCompletedCount');
+    const avgEl = document.getElementById('sumAvgResult');
+    const karatEl = document.getElementById('sumEstimatedKarat');
+    const pairsEl = document.getElementById('sumPairsHealth');
+
+    if (countEl) countEl.textContent = `${validResults.length} / ${NUM_ROWS}`;
+
+    if (validResults.length > 0) {
+      const avg = validResults.reduce((acc, v) => acc + v, 0) / validResults.length;
+      if (avgEl) avgEl.textContent = `${formatDisplay(avg, 1)} ‰`;
+      const kInfo = estimateKaratInfo(avg);
+      if (karatEl && kInfo) {
+        karatEl.textContent = `${kInfo.karat} (${kInfo.deltaText})`;
+      }
+    } else {
+      if (avgEl) avgEl.textContent = '—';
+      if (karatEl) karatEl.textContent = '—';
+    }
+
+    const readyPairs = pairs.filter(p => p.ready);
+    if (pairsEl) {
+      if (readyPairs.length === 0) {
+        pairsEl.textContent = 'بانتظار النتائج';
+      } else {
+        const okCount = readyPairs.filter(p => p.ok).length;
+        pairsEl.textContent = `${okCount} / ${readyPairs.length} سليم`;
+      }
+    }
+  }
+
+  function computeAll(rows) {
+    const computedRows = rows.map((r, idx) => {
+      const origW = parseNum(r.originalWeight);
+      const actS = parseNum(r.actualSilver);
+      const goldS = parseNum(r.goldWithSilver);
+      const afterCast = parseNum(r.afterCasting);
+      const afterRoll = parseNum(r.afterRolling);
+      const afterCup = parseNum(r.afterCupellation);
+
+      // 1. Required Silver = originalWeight * 2.8
+      let reqSilver = null;
+      if (origW !== null && origW > 0) {
+        reqSilver = origW * 2.8;
+      }
+
+      // 2. Actual Silver check: |actualSilver - reqSilver| <= 30
+      let silverValid = null;
+      if (reqSilver !== null && actS !== null) {
+        const diffS = Math.abs(actS - reqSilver);
+        silverValid = diffS <= 30;
+      }
+
+      // Expected Gold + Silver = originalWeight + actualSilver (allowed loss <= 2)
+      let expectedGoldSilver = null;
+      let goldSilverLoss = null;
+      let goldSilverBad = false;
+      if (origW !== null && actS !== null) {
+        expectedGoldSilver = origW + actS;
+        if (goldS !== null) {
+          goldSilverLoss = expectedGoldSilver - goldS;
+          goldSilverBad = goldSilverLoss > 2;
+        }
+      }
+
+      // 3. Casting loss = goldWithSilver - afterCasting (limit <= 5)
+      let castingLoss = null;
+      let castingBad = false;
+      if (goldS !== null && afterCast !== null) {
+        castingLoss = goldS - afterCast;
+        castingBad = castingLoss > 5;
+      }
+
+      // 4. Rolling loss = afterCasting - afterRolling (limit <= 3)
+      let rollingLoss = null;
+      let rollingBad = false;
+      if (afterCast !== null && afterRoll !== null) {
+        rollingLoss = afterCast - afterRoll;
+        rollingBad = rollingLoss > 3;
+      }
+
+      // 5. Final Result = (afterCupellation / originalWeight) * 1000
+      let finalResult = null;
+      if (afterCup !== null && origW !== null && origW > 0) {
+        finalResult = (afterCup / origW) * 1000;
+      }
+
+      // 6. Status before cupellation ("العينات قبل الشولة")
+      // Depends on castingLoss (<= 5) and rollingLoss (<= 3)
+      let preCupStatus = 'بانتظار البيانات';
+      let preCupState = 'wait'; // 'wait' | 'ok' | 'bad'
+      if (castingLoss !== null && rollingLoss !== null) {
+        if (castingLoss > 5 || rollingLoss > 3) {
+          preCupStatus = 'عينة ناقصة';
+          preCupState = 'bad';
+        } else {
+          preCupStatus = 'عينة سليمة';
+          preCupState = 'ok';
+        }
+      } else if ((castingLoss !== null && castingLoss > 5) || (rollingLoss !== null && rollingLoss > 3)) {
+        // Even if one stage is entered and already exceeds the allowed loss limit
+        preCupStatus = 'عينة ناقصة';
+        preCupState = 'bad';
+      }
+
+      return {
+        sampleNumber: idx + 1,
+        sampleName: r.sampleName || '',
+        origW,
+        reqSilver,
+        actS,
+        silverValid,
+        expectedGoldSilver,
+        goldS,
+        goldSilverLoss,
+        goldSilverBad,
+        afterCast,
+        castingLoss,
+        castingBad,
+        afterRoll,
+        rollingLoss,
+        rollingBad,
+        afterCup,
+        finalResult,
+        preCupStatus,
+        preCupState
+      };
     });
 
-    function speakArabic(text) {
-      if (!('speechSynthesis' in window)) return;
-      window.speechSynthesis.cancel();
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = 'ar-SA';
-      utter.rate = 1.0;
-      window.speechSynthesis.speak(utter);
-    }
-
-    function formatNow() {
-      const d = new Date();
-      return d.toLocaleString('ar-YE', {
-        year: 'numeric', month: '2-digit', day: '2-digit',
-        hour: '2-digit', minute: '2-digit', second: '2-digit'
-      });
-    }
-
-    function getRecords() {
-      try {
-        return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-      } catch {
-        return [];
+    // Pair comparisons: (0,1), (2,3), (4,5)
+    const pairs = [];
+    for (let p = 0; p < 3; p++) {
+      const r1 = computedRows[p * 2];
+      const r2 = computedRows[p * 2 + 1];
+      if (r1.finalResult !== null && r2.finalResult !== null) {
+        const diff = Math.abs(r1.finalResult - r2.finalResult);
+        pairs.push({
+          ready: true,
+          diff,
+          ok: diff <= 1.5,
+          text: formatDisplay(diff, 1)
+        });
+      } else {
+        pairs.push({
+          ready: false,
+          diff: null,
+          ok: null,
+          text: 'بانتظار العينتين'
+        });
       }
     }
 
-    function saveRecords(list) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-      renderRecords();
-    }
+    return { computedRows, pairs };
+  }
 
-    function analyzeSample() {
-      const nameA = document.getElementById('sampleAName').value.trim() || 'عينة A';
-      const finA = parseFloat(document.getElementById('sampleAFiness').value);
-      const nameB = document.getElementById('sampleBName').value.trim() || 'عينة B';
-      const finB = parseFloat(document.getElementById('sampleBFiness').value);
-      const weight = parseFloat(document.getElementById('weight').value) || 0;
-      const threshold = parseFloat(document.getElementById('threshold').value) || 3.0;
+  // Build the 6 input rows once in the DOM
+  function initTableDOM() {
+    const tbody = document.getElementById('samplesBody');
+    tbody.innerHTML = '';
 
-      if (isNaN(finA) || finA <= 0 || finA > 1000) {
-        alert('يرجى إدخال دقة صحيحة للعينة الأولى بين 0 و 1000');
-        return;
-      }
+    for (let i = 0; i < NUM_ROWS; i++) {
+      const tr = document.createElement('tr');
+      const pairIndex = Math.floor(i / 2);
+      const isSecondInPair = (i % 2 === 1);
 
-      const karatA = ((finA / 1000) * 24).toFixed(2);
-      const pureGoldA = weight > 0 ? ((weight * finA) / 1000).toFixed(3) : '—';
+      if (pairIndex === 1) tr.classList.add('pair-group-2');
+      if (isSecondInPair) tr.classList.add('pair-end');
 
-      let diffText = 'لا توجد مقارنة';
-      let diffVal = 0;
-      let isExceeded = false;
-
-      if (!isNaN(finB) && finB > 0 && finB <= 1000) {
-        diffVal = Number((finA - finB).toFixed(2));
-        const absDiff = Math.abs(diffVal);
-        diffText = `${diffVal > 0 ? '+' : ''}${diffVal}`;
-        if (absDiff > threshold) {
-          isExceeded = true;
-        }
-      }
-
-      const timestamp = formatNow();
-      const outEl = document.getElementById('output');
-
-      let msgHtml = `
-        <div><strong>الوقت:</strong> ${timestamp}</div>
-        <div><strong>${nameA}:</strong> دقة ${finA} / 1000 — عيار تقريبي: <strong>${karatA}k</strong></div>
-        <div><strong>الذهب الخالص المقدر:</strong> ${pureGoldA} ${weight > 0 ? 'جم' : ''}</div>
+      let rowHTML = `
+        <td>${i + 1}</td>
+        <td><input type="text" class="cell-input name-input" data-row="${i}" data-field="sampleName" placeholder="اسم العينة"></td>
+        <td><input type="number" step="any" inputmode="decimal" class="cell-input" data-row="${i}" data-field="originalWeight" placeholder="0.00"></td>
+        <td class="calc-cell" id="reqSilver_${i}">—</td>
+        <td><input type="number" step="any" inputmode="decimal" class="cell-input" id="actSilverInput_${i}" data-row="${i}" data-field="actualSilver" placeholder="0.00"></td>
+        <td><input type="number" step="any" inputmode="decimal" class="cell-input" id="goldSilverInput_${i}" data-row="${i}" data-field="goldWithSilver" placeholder="0.00" title="تُجمع تلقائيًا (وزن العينة + الفضة الفعلية) ويمكن تعديلها يدويًا حسب الميزان"></td>
+        <td><input type="number" step="any" inputmode="decimal" class="cell-input" data-row="${i}" data-field="afterCasting" placeholder="0.00"></td>
+        <td class="calc-cell" id="castingLoss_${i}">—</td>
+        <td><input type="number" step="any" inputmode="decimal" class="cell-input" data-row="${i}" data-field="afterRolling" placeholder="0.00"></td>
+        <td class="calc-cell" id="rollingLoss_${i}">—</td>
+        <td><input type="number" step="any" inputmode="decimal" class="cell-input" data-row="${i}" data-field="afterCupellation" placeholder="0.00"></td>
+        <td class="final-result-cell" id="finalResult_${i}">—</td>
       `;
 
-      if (!isNaN(finB) && finB > 0) {
-        msgHtml += `<div><strong>مقارنة مع ${nameB} (${finB}):</strong> الفرق <strong>${diffText}</strong> جزء</div>`;
+      // Merged pair comparison cell on the first row of each pair (rowspan="2")
+      if (i % 2 === 0) {
+        rowHTML += `<td class="pair-diff-cell state-wait" rowspan="2" id="pairDiff_${pairIndex}">بانتظار العينتين</td>`;
       }
 
-      if (isExceeded) {
-        outEl.className = 'result-box alert-box';
-        msgHtml += `<div style="margin-top:6px; font-weight:bold;">تنبيه: تجاوز الحد المسموح (${threshold})!</div>`;
-        speakArabic(`تنبيه، تجاوز حد النقص أو الفرق في تحليل ${nameA}`);
-      } else {
-        outEl.className = 'result-box';
-        msgHtml += `<div style="margin-top:6px; color:#86efac;">الحالة: ضمن الحدود المسموحة</div>`;
-      }
+      rowHTML += `<td class="status-cell state-wait" id="preCupStatus_${i}">بانتظار البيانات</td>`;
 
-      outEl.innerHTML = msgHtml;
-
-      const records = getRecords();
-      records.unshift({
-        time: timestamp,
-        nameA,
-        finA,
-        nameB: !isNaN(finB) && finB > 0 ? nameB : '-',
-        diff: diffText,
-        status: isExceeded ? 'تجاوز الحد' : 'سليم'
-      });
-      saveRecords(records);
+      tr.innerHTML = rowHTML;
+      tbody.appendChild(tr);
     }
 
-    function renderRecords() {
-      const tbody = document.getElementById('recordsBody');
-      const records = getRecords();
-      tbody.innerHTML = records.map(r => `
-        <tr>
-          <td>${r.time}</td>
-          <td>${r.nameA}</td>
-          <td>${r.finA}</td>
-          <td>${r.nameB}</td>
-          <td>${r.diff}</td>
-          <td style="color:${r.status === 'تجاوز الحد' ? '#f87171' : '#4ade80'}">${r.status}</td>
-        </tr>
-      `).join('');
-    }
+    // Attach input listeners
+    tbody.querySelectorAll('.cell-input').forEach(inp => {
+      inp.addEventListener('input', (e) => {
+        const rowIdx = Number(e.target.dataset.row);
+        const field = e.target.dataset.field;
+        const rowObj = currentDraft.rows[rowIdx];
+        rowObj[field] = e.target.value;
 
-    function exportBackup() {
-      const data = JSON.stringify(getRecords(), null, 2);
-      const blob = new Blob([data], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `gold-assay-backup-${Date.now()}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    function importBackup(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        try {
-          const parsed = JSON.parse(reader.result);
-          if (Array.isArray(parsed)) {
-            saveRecords(parsed);
-            alert('تم استيراد النسخة الاحتياطية بنجاح');
-          } else {
-            alert('ملف النسخة الاحتياطية غير صالح');
-          }
-        } catch {
-          alert('تعذر قراءة الملف');
+        if (field === 'goldWithSilver') {
+          rowObj.goldSilverManual = true;
         }
-      };
-      reader.readAsText(file);
-    }
 
-    function clearRecords() {
-      if (confirm('هل أنت متأكد من مسح جميع السجلات المحفوظة؟')) {
-        localStorage.removeItem(STORAGE_KEY);
-        renderRecords();
+        // Auto-populate expected sum (originalWeight + actualSilver) when user edits weights
+        // unless they manually customized goldWithSilver
+        if ((field === 'originalWeight' || field === 'actualSilver') && !rowObj.goldSilverManual) {
+          const w = parseNum(rowObj.originalWeight);
+          const s = parseNum(rowObj.actualSilver);
+          if (w !== null && s !== null) {
+            const sumVal = String(Number((w + s).toFixed(6)));
+            rowObj.goldWithSilver = sumVal;
+            const gsInp = document.getElementById(`goldSilverInput_${rowIdx}`);
+            if (gsInp && document.activeElement !== gsInp) {
+              gsInp.value = sumVal;
+            }
+          }
+        }
+
+        saveDraftToStorage();
+        updateUI();
+      });
+    });
+
+    // Attach date & time listeners
+    document.getElementById('analysisDate').addEventListener('change', (e) => {
+      currentDraft.date = e.target.value;
+      saveDraftToStorage();
+    });
+
+    document.getElementById('analysisTime').addEventListener('change', (e) => {
+      currentDraft.time = e.target.value;
+      saveDraftToStorage();
+    });
+  }
+
+  // Populate inputs from currentDraft object
+  function syncInputsFromDraft() {
+    document.getElementById('analysisDate').value = currentDraft.date || new Date().toISOString().split('T')[0];
+    const timeInp = document.getElementById('analysisTime');
+    if (timeInp) {
+      timeInp.value = currentDraft.time || getCurrentTimeHHMM();
+    }
+    document.querySelectorAll('#samplesBody .cell-input').forEach(inp => {
+      const rowIdx = Number(inp.dataset.row);
+      const field = inp.dataset.field;
+      inp.value = currentDraft.rows[rowIdx][field] ?? '';
+    });
+    updateUI();
+  }
+
+  // Update calculated cells and conditional coloring without losing input focus
+  function updateUI() {
+    const { computedRows, pairs } = computeAll(currentDraft.rows);
+
+    computedRows.forEach((c, i) => {
+      // Required Silver
+      const reqEl = document.getElementById(`reqSilver_${i}`);
+      reqEl.textContent = c.reqSilver !== null ? formatDisplay(c.reqSilver, 2) : '—';
+
+      // Actual Silver highlight if |diff| > 30
+      const actInp = document.getElementById(`actSilverInput_${i}`);
+      if (c.silverValid === false) {
+        actInp.classList.add('input-bad');
+      } else {
+        actInp.classList.remove('input-bad');
       }
+
+      // Gold + Silver highlight if loss from (originalWeight + actualSilver) exceeds 2
+      const gsInp = document.getElementById(`goldSilverInput_${i}`);
+      if (c.goldSilverBad) {
+        gsInp.classList.add('input-bad');
+        gsInp.title = `المتوقع: ${formatDisplay(c.expectedGoldSilver, 2)} | النقص: ${formatDisplay(c.goldSilverLoss, 2)} (تجاوز الحد المسموح 2)`;
+      } else {
+        gsInp.classList.remove('input-bad');
+        if (c.expectedGoldSilver !== null) {
+          gsInp.title = `المجموع المتوقع (عينة + فضة فعلية): ${formatDisplay(c.expectedGoldSilver, 2)} | المسموح نقص 2`;
+        } else {
+          gsInp.title = 'تُجمع تلقائيًا (وزن العينة + الفضة الفعلية) ويمكن تعديلها يدويًا حسب الميزان';
+        }
+      }
+
+      // Casting Loss
+      const castEl = document.getElementById(`castingLoss_${i}`);
+      castEl.classList.remove('state-bad');
+      if (c.castingLoss !== null) {
+        castEl.textContent = formatDisplay(c.castingLoss, 2);
+        if (c.castingBad) {
+          castEl.classList.add('state-bad');
+        }
+      } else {
+        castEl.textContent = '—';
+      }
+
+      // Rolling Loss
+      const rollEl = document.getElementById(`rollingLoss_${i}`);
+      rollEl.classList.remove('state-bad');
+      if (c.rollingLoss !== null) {
+        rollEl.textContent = formatDisplay(c.rollingLoss, 2);
+        if (c.rollingBad) {
+          rollEl.classList.add('state-bad');
+        }
+      } else {
+        rollEl.textContent = '—';
+      }
+
+      // Final Result (1 decimal place) + Karat approximation badge
+      const finalEl = document.getElementById(`finalResult_${i}`);
+      if (c.finalResult !== null) {
+        const kInfo = estimateKaratInfo(c.finalResult);
+        const subHtml = kInfo ? `<span class="karat-sub">≈ ${kInfo.karat} (${kInfo.deltaText})</span>` : '';
+        finalEl.innerHTML = `${formatDisplay(c.finalResult, 1)}${subHtml}`;
+      } else {
+        finalEl.textContent = '—';
+      }
+
+      // Status before cupellation ("العينات قبل الشولة")
+      const statusEl = document.getElementById(`preCupStatus_${i}`);
+      statusEl.textContent = c.preCupStatus;
+      statusEl.classList.remove('state-ok', 'state-bad', 'state-wait');
+      if (c.preCupState === 'ok') statusEl.classList.add('state-ok');
+      else if (c.preCupState === 'bad') statusEl.classList.add('state-bad');
+      else statusEl.classList.add('state-wait');
+    });
+
+    // Update 3 merged pair cells
+    pairs.forEach((p, idx) => {
+      const pairEl = document.getElementById(`pairDiff_${idx}`);
+      pairEl.textContent = p.text;
+      pairEl.classList.remove('state-ok', 'state-bad', 'state-wait');
+      if (!p.ready) {
+        pairEl.classList.add('state-wait');
+      } else if (p.ok) {
+        pairEl.classList.add('state-ok');
+      } else {
+        pairEl.classList.add('state-bad');
+      }
+    });
+
+    updateLabSummary(computedRows, pairs);
+  }
+
+  // Save draft to localStorage
+  function saveDraftToStorage() {
+    try {
+      localStorage.setItem(STORAGE_DRAFT_KEY, JSON.stringify(currentDraft));
+      const status = document.getElementById('autoSaveStatus');
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      status.textContent = `تم الحفظ تلقائيًا (${timeStr})`;
+    } catch (err) {
+      console.error('Storage error:', err);
+    }
+  }
+
+  // Load draft and history from localStorage on startup
+  function loadFromStorage() {
+    try {
+      const rawDraft = localStorage.getItem(STORAGE_DRAFT_KEY);
+      if (rawDraft) {
+        const parsed = JSON.parse(rawDraft);
+        if (parsed && Array.isArray(parsed.rows) && parsed.rows.length === NUM_ROWS) {
+          currentDraft = parsed;
+        }
+      }
+    } catch (e) {
+      console.warn('Could not load draft', e);
     }
 
-    renderRecords();
-  </script>
+    try {
+      const rawHistory = localStorage.getItem(STORAGE_HISTORY_KEY);
+      if (rawHistory) {
+        const parsedHist = JSON.parse(rawHistory);
+        if (Array.isArray(parsedHist)) {
+          savedHistory = parsedHist;
+        }
+      }
+    } catch (e) {
+      console.warn('Could not load history', e);
+    }
+  }
+
+  function saveHistoryToStorage() {
+    try {
+      localStorage.setItem(STORAGE_HISTORY_KEY, JSON.stringify(savedHistory));
+    } catch (e) {
+      alert('تعذر حفظ السجل في ذاكرة المتصفح.');
+    }
+  }
+
+  // Save current analysis into permanent history log
+  function saveCurrentAnalysis() {
+    const hasAnyData = currentDraft.rows.some(r =>
+      (r.sampleName && r.sampleName.trim() !== '') ||
+      parseNum(r.originalWeight) !== null ||
+      parseNum(r.actualSilver) !== null ||
+      parseNum(r.goldWithSilver) !== null ||
+      parseNum(r.afterCasting) !== null ||
+      parseNum(r.afterRolling) !== null ||
+      parseNum(r.afterCupellation) !== null
+    );
+
+    if (!hasAnyData) {
+      showToast('⚠️ الجدول فارغ! أدخل بيانات عينة واحدة على الأقل قبل الحفظ.');
+      return;
+    }
+
+    const { computedRows, pairs } = computeAll(currentDraft.rows);
+    const analysisDate = document.getElementById('analysisDate').value || new Date().toISOString().split('T')[0];
+    const timeInp = document.getElementById('analysisTime');
+    const analysisTime = (timeInp && timeInp.value) ? timeInp.value : getCurrentTimeHHMM();
+    currentDraft.date = analysisDate;
+    currentDraft.time = analysisTime;
+    saveDraftToStorage();
+
+    const record = {
+      id: Date.now().toString(),
+      savedAt: new Date().toISOString(),
+      date: analysisDate,
+      time: analysisTime,
+      rawRows: JSON.parse(JSON.stringify(currentDraft.rows)),
+      samples: computedRows.map((c, idx) => {
+        const pairIdx = Math.floor(idx / 2);
+        return {
+          sampleNumber: c.sampleNumber,
+          sampleName: c.sampleName,
+          originalWeight: c.origW,
+          requiredSilver: c.reqSilver,
+          actualSilver: c.actS,
+          silverValid: c.silverValid,
+          goldWithSilver: c.goldS,
+          afterCasting: c.afterCast,
+          castingLoss: c.castingLoss,
+          afterRolling: c.afterRoll,
+          rollingLoss: c.rollingLoss,
+          afterCupellation: c.afterCup,
+          finalResult: c.finalResult,
+          sampleStatus: c.preCupStatus,
+          pairComparison: pairs[pairIdx].text,
+          pairOk: pairs[pairIdx].ok
+        };
+      }),
+      pairs: pairs
+    };
+
+    savedHistory.unshift(record);
+    saveHistoryToStorage();
+    renderHistory();
+    showToast('✅ تم حفظ التحليل في السجل بنجاح');
+  }
+
+  // Render saved history cards
+  function renderHistory() {
+    const listEl = document.getElementById('historyList');
+    const countEl = document.getElementById('historyCount');
+    countEl.textContent = savedHistory.length;
+
+    if (savedHistory.length === 0) {
+      listEl.innerHTML = '<div style="color:#94a3b8; font-size:0.88rem; padding:8px;">لا توجد تحاليل محفوظة بعد. اضغط على «حفظ التحليل» لحفظ النتائج الحالية.</div>';
+      return;
+    }
+
+    const searchInp = document.getElementById('historySearchInput');
+    const q = searchInp ? searchInp.value.trim().toLowerCase() : '';
+    const filteredHistory = q
+      ? savedHistory.filter(rec => {
+          const tLabelSearch = formatTimeArabic(rec.time, rec.savedAt).toLowerCase();
+          const dateMatch = String(rec.date || '').toLowerCase().includes(q) || String(rec.time || '').includes(q) || tLabelSearch.includes(q);
+          const nameMatch = Array.isArray(rec.samples) && rec.samples.some(s => String(s.sampleName || '').toLowerCase().includes(q));
+          return dateMatch || nameMatch;
+        })
+      : savedHistory;
+
+    if (filteredHistory.length === 0) {
+      listEl.innerHTML = '<div style="color:#94a3b8; font-size:0.88rem; padding:8px;">لا توجد نتائج مطابقة للبحث الحالي.</div>';
+      return;
+    }
+
+    listEl.innerHTML = filteredHistory.map(rec => {
+      const namedSamples = rec.samples
+        .filter(s => s.sampleName && s.sampleName.trim() !== '')
+        .map(s => s.sampleName.trim());
+      const namesSummary = namedSamples.length > 0 ? namedSamples.join(' ، ') : 'بدون أسماء محددة';
+
+      const completedCount = rec.samples.filter(s => s.finalResult !== null).length;
+
+      return `
+        <div class="history-card">
+          <div class="history-card-top">
+            <span>📅 ${rec.date}${formatTimeArabic(rec.time, rec.savedAt) ? ` • 🕒 ${formatTimeArabic(rec.time, rec.savedAt)}` : ''}</span>
+            <span style="font-size:0.78rem; background:#1e293b; color:#cbd5e1; padding:2px 6px; border-radius:4px;">${completedCount}/6 نتائج</span>
+          </div>
+          <div class="history-card-meta"><strong>العينات:</strong> ${escapeHtml(namesSummary)}</div>
+          <div class="history-card-actions">
+            <button type="button" class="btn btn-view btn-sm" onclick="viewHistoryRecord('${rec.id}')">👁️ عرض التفاصيل</button>
+            <button type="button" class="btn btn-load btn-sm" onclick="loadHistoryRecord('${rec.id}')">↩️ فتح في الجدول</button>
+            <button type="button" class="btn btn-clear btn-sm" onclick="deleteHistoryRecord('${rec.id}')">🗑️ حذف</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // View saved analysis in modal
+  function viewHistoryRecord(id) {
+    const rec = savedHistory.find(r => r.id === id);
+    if (!rec) return;
+
+    const tLabel = formatTimeArabic(rec.time, rec.savedAt);
+    document.getElementById('modalTitle').textContent = `تفاصيل تحليل الذهب — بتاريخ: ${rec.date}${tLabel ? ` • الساعة: ${tLabel}` : ''}`;
+    const loadBtn = document.getElementById('modalLoadBtn');
+    loadBtn.onclick = () => {
+      closeModal();
+      loadHistoryRecord(id);
+    };
+
+    let html = `
+      <table class="analysis-table">
+        <thead>
+          <tr>
+            <th>رقم العينة</th>
+            <th>اسم العينة</th>
+            <th>وزن العينة الأصلي</th>
+            <th>الفضة المطلوبة × 2.8</th>
+            <th>الفضة الفعلية</th>
+            <th>وزن الذهب مع الفضة</th>
+            <th>بعد الصبة</th>
+            <th>نقص الصبة</th>
+            <th>بعد الجرور</th>
+            <th>نقص الجرور</th>
+            <th>بعد الشولة</th>
+            <th>الناتج النهائي ‰</th>
+            <th>التحقق من فارق العينات</th>
+            <th>العينات قبل الشولة</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    rec.samples.forEach((s, idx) => {
+      const pairIdx = Math.floor(idx / 2);
+      const isSecond = idx % 2 === 1;
+      const trClasses = [];
+      if (pairIdx === 1) trClasses.push('pair-group-2');
+      if (isSecond) trClasses.push('pair-end');
+
+      const silverClass = s.silverValid === false ? 'state-bad' : '';
+      const castClass = (s.castingLoss !== null && s.castingLoss > 5) ? 'state-bad' : '';
+      const rollClass = (s.rollingLoss !== null && s.rollingLoss > 3) ? 'state-bad' : '';
+
+      let statusClass = 'state-wait';
+      if (s.sampleStatus === 'عينة سليمة') statusClass = 'state-ok';
+      else if (s.sampleStatus === 'عينة ناقصة') statusClass = 'state-bad';
+
+      html += `
+        <tr class="${trClasses.join(' ')}">
+          <td>${s.sampleNumber}</td>
+          <td>${escapeHtml(s.sampleName || '—')}</td>
+          <td class="calc-cell">${s.originalWeight !== null ? s.originalWeight : '—'}</td>
+          <td class="calc-cell">${formatDisplay(s.requiredSilver, 2)}</td>
+          <td class="calc-cell ${silverClass}">${s.actualSilver !== null ? s.actualSilver : '—'}</td>
+          <td class="calc-cell">${s.goldWithSilver !== null ? s.goldWithSilver : '—'}</td>
+          <td class="calc-cell">${s.afterCasting !== null ? s.afterCasting : '—'}</td>
+          <td class="calc-cell ${castClass}">${formatDisplay(s.castingLoss, 2)}</td>
+          <td class="calc-cell">${s.afterRolling !== null ? s.afterRolling : '—'}</td>
+          <td class="calc-cell ${rollClass}">${formatDisplay(s.rollingLoss, 2)}</td>
+          <td class="calc-cell">${s.afterCupellation !== null ? s.afterCupellation : '—'}</td>
+          <td class="final-result-cell">${formatDisplay(s.finalResult, 1)}</td>
+      `;
+
+      if (idx % 2 === 0) {
+        const pairObj = rec.pairs ? rec.pairs[pairIdx] : null;
+        let pairClass = 'state-wait';
+        if (pairObj && pairObj.ready) {
+          pairClass = pairObj.ok ? 'state-ok' : 'state-bad';
+        }
+        html += `<td class="pair-diff-cell ${pairClass}" rowspan="2">${escapeHtml(s.pairComparison)}</td>`;
+      }
+
+      html += `<td class="status-cell ${statusClass}">${escapeHtml(s.sampleStatus)}</td></tr>`;
+    });
+
+    html += '</tbody></table>';
+    document.getElementById('modalTableContainer').innerHTML = html;
+    document.getElementById('viewModal').classList.add('active');
+  }
+
+  function closeModal() {
+    document.getElementById('viewModal').classList.remove('active');
+  }
+
+  // Load a saved record back into the active editing table
+  function loadHistoryRecord(id) {
+    const rec = savedHistory.find(r => r.id === id);
+    if (!rec || !rec.rawRows) return;
+
+    if (!confirm('هل تريد استرجاع هذا التحليل إلى الجدول الرئيسي؟ سيتم استبدال البيانات غير المحفوظة في الجدول الحالي.')) {
+      return;
+    }
+
+    currentDraft = {
+      date: rec.date,
+      time: rec.time || getCurrentTimeHHMM(),
+      rows: JSON.parse(JSON.stringify(rec.rawRows))
+    };
+    saveDraftToStorage();
+    syncInputsFromDraft();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    showToast('✅ تم استرجاع التحليل إلى الجدول الرئيسي');
+  }
+
+  function deleteHistoryRecord(id) {
+    if (!confirm('هل أنت متأكد من حذف هذا التحليل من السجل نهائيًا؟')) return;
+    savedHistory = savedHistory.filter(r => r.id !== id);
+    saveHistoryToStorage();
+    renderHistory();
+    showToast('🗑️ تم حذف التحليل من السجل');
+  }
+
+  // Clear current input fields with confirmation
+  function clearCurrentFields() {
+    if (!confirm('هل أنت متأكد من تفريغ جميع الخانات الحالية؟ لا يمكن التراجع عن هذه الخطوة إذا لم تقم بحفظ التحليل.')) {
+      return;
+    }
+    const keepDate = document.getElementById('analysisDate').value || getLocalDateISO();
+    currentDraft = createEmptyDraft();
+    currentDraft.date = keepDate;
+    saveDraftToStorage();
+    syncInputsFromDraft();
+    showToast('🧹 تم تفريغ جميع الخانات');
+  }
+
+
+  // Build standardized backup object
+  function buildBackupPayload() {
+    return {
+      appName: 'تحليل عينات الذهب',
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      currentDraft: currentDraft,
+      savedHistory: savedHistory
+    };
+  }
+
+  // Shared importer supporting both merge and replace modes
+  function applyBackupData(data, mergeMode) {
+    if (!data || typeof data !== 'object' || !Array.isArray(data.savedHistory)) {
+      alert('خطأ: البيانات أو الملف المحدد ليس نسخة احتياطية صالحة لبرنامج تحليل عينات الذهب.');
+      return false;
+    }
+
+    const isValidHistory = data.savedHistory.every(item =>
+      item && typeof item === 'object' && typeof item.date === 'string' && Array.isArray(item.samples)
+    );
+    if (!isValidHistory) {
+      alert('خطأ: بنية بيانات السجل داخل النسخة غير صحيحة أو تالفة.');
+      return false;
+    }
+
+    const modeLabel = mergeMode ? 'دمج السجل المستورد مع السجل الحالي' : 'استبدال السجل الحالي بالبيانات المستوردة';
+    const msg = `تم التحقق من البيانات بنجاح.
+تحتوي النسخة على (${data.savedHistory.length}) تحليل محفوظ.
+
+هل تريد ${modeLabel}؟`;
+    if (!confirm(msg)) {
+      return false;
+    }
+
+    if (mergeMode) {
+      const existingIds = new Set(savedHistory.map(h => String(h.id)));
+      const newItems = data.savedHistory.filter(h => !existingIds.has(String(h.id)));
+      savedHistory = [...newItems, ...savedHistory];
+    } else {
+      savedHistory = data.savedHistory;
+    }
+    saveHistoryToStorage();
+
+    if (data.currentDraft && Array.isArray(data.currentDraft.rows) && data.currentDraft.rows.length === NUM_ROWS) {
+      currentDraft = data.currentDraft;
+      saveDraftToStorage();
+      syncInputsFromDraft();
+    }
+
+    renderHistory();
+    showToast('📥 تم نقل واستعادة بيانات العينات بنجاح');
+    return true;
+  }
+
+  function openTransferModal() {
+    const ta = document.getElementById('transferTextarea');
+    ta.value = JSON.stringify(buildBackupPayload(), null, 2);
+    document.getElementById('transferModal').classList.add('active');
+  }
+
+  function closeTransferModal() {
+    document.getElementById('transferModal').classList.remove('active');
+  }
+
+  function copyBackupText() {
+    const ta = document.getElementById('transferTextarea');
+    const text = JSON.stringify(buildBackupPayload(), null, 2);
+    ta.value = text;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('📋 تم نسخ بيانات العينات والسجل');
+      }).catch(() => {
+        ta.select();
+        document.execCommand('copy');
+        showToast('📋 تم نسخ بيانات العينات والسجل');
+      });
+    } else {
+      ta.select();
+      document.execCommand('copy');
+      showToast('📋 تم نسخ بيانات العينات والسجل');
+    }
+  }
+
+  function handleTransferFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById('transferTextarea').value = e.target.result;
+      showToast('📂 تم تحميل محتوى الملف — اضغط «استيراد البيانات الملصقة» للتأكيد');
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+  }
+
+  function applyTransferFromText() {
+    const raw = document.getElementById('transferTextarea').value.trim();
+    if (!raw) {
+      alert('يرجى لصق بيانات النسخة الاحتياطية أولًا.');
+      return;
+    }
+    try {
+      const parsed = JSON.parse(raw);
+      const mergeMode = document.getElementById('mergeHistoryCheckbox').checked;
+      if (applyBackupData(parsed, mergeMode)) {
+        closeTransferModal();
+      }
+    } catch (err) {
+      alert('تعذر قراءة النص: تأكد من لصق نص JSON صحيح ومنسوخ بالكامل.');
+    }
+  }
+
+  // Export JSON backup
+  function exportBackup() {
+    const backupPayload = {
+      appName: 'تحليل عينات الذهب',
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      currentDraft: currentDraft,
+      savedHistory: savedHistory
+    };
+
+    const jsonStr = JSON.stringify(backupPayload, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    const dateTag = getLocalDateISO();
+    a.href = url;
+    a.download = `gold_analysis_backup_${dateTag}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    showToast('📤 تم تصدير النسخة الاحتياطية بنجاح');
+  }
+
+  // Import JSON backup with validation & confirmation
+  function importBackup(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const data = JSON.parse(e.target.result);
+        applyBackupData(data, false);
+      } catch (err) {
+        alert('فشل قراءة الملف: تأكد من اختيار ملف JSON سليم.');
+      } finally {
+        event.target.value = '';
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  // Initialize application
+  window.addEventListener('DOMContentLoaded', () => {
+    initTableDOM();
+    loadFromStorage();
+    syncInputsFromDraft();
+    renderHistory();
+    startPhoneClock();
+  });
+</script>
+
 </body>
 </html>
