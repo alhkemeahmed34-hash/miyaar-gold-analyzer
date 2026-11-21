@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>تحليل عينات الذهب - الورشة</title>
   <style>
+    .live-clock {
+      display:flex; justify-content:space-between; align-items:center; gap:12px;
+      padding:10px 12px; margin-bottom:12px; border:1px solid var(--border);
+      border-radius:10px; background:#1b1f27; color:var(--muted); font-size:.9rem;
+    }
+    .live-clock strong { color:var(--accent); font-size:1rem; direction:ltr; unicode-bidi:embed; }
+    @media (max-width:380px) { .live-clock {font-size:.78rem;} .live-clock strong {font-size:.9rem;} }
     :root {
       --bg: #111318;
       --card: #1b1f27;
@@ -103,6 +110,10 @@
   </style>
 </head>
 <body>
+  <div class="live-clock" aria-live="off">
+    <span id="liveDate">--/--/----</span>
+    <strong id="liveTime">--:--:--</strong>
+  </div>
   <h1>نظام تحليل ومقارنة عينات الذهب</h1>
 
   <div class="card">
@@ -167,6 +178,25 @@
 
   <script>
     const STORAGE_KEY = 'gold_assay_records_v1';
+
+    // ساعة مباشرة تتبع وقت وتاريخ الهاتف تلقائياً.
+    function updateLiveClock() {
+      const now = new Date();
+      const dateEl = document.getElementById('liveDate');
+      const timeEl = document.getElementById('liveTime');
+      if (!dateEl || !timeEl) return;
+      dateEl.textContent = now.toLocaleDateString('ar-YE', {
+        weekday: 'short', year: 'numeric', month: '2-digit', day: '2-digit'
+      });
+      timeEl.textContent = now.toLocaleTimeString('ar-YE', {
+        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
+      });
+    }
+    updateLiveClock();
+    setInterval(updateLiveClock, 1000);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) updateLiveClock();
+    });
 
     function speakArabic(text) {
       if (!('speechSynthesis' in window)) return;
