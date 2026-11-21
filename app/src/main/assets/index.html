@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>تحليل عينات الذهب - الورشة</title>
+  <style>
+    :root {
+      --bg: #111318;
+      --card: #1b1f27;
+      --accent: #eab308;
+      --accent-dark: #ca8a04;
+      --text: #f3f4f6;
+      --muted: #9ca3af;
+      --danger: #ef4444;
+      --ok: #22c55e;
+      --border: #2d3340;
+    }
+    * { box-sizing: border-box; font-family: Tahoma, Arial, sans-serif; }
+    body {
+      margin: 0;
+      padding: 14px;
+      background: var(--bg);
+      color: var(--text);
+    }
+    h1 {
+      font-size: 1.25rem;
+      margin: 0 0 12px;
+      color: var(--accent);
+      text-align: center;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    label {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 9px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 0.95rem;
+    }
+    input, select {
+      background: #12151b;
+      color: var(--text);
+    }
+    button {
+      background: var(--accent);
+      color: #111;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+    }
+    button:active { background: var(--accent-dark); }
+    .btn-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .btn-secondary { background: #374151; color: #fff; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .result-box {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      background: #12151b;
+      border-right: 4px solid var(--accent);
+      line-height: 1.7;
+    }
+    .alert-box {
+      border-right-color: var(--danger);
+      color: #fecaca;
+      background: #2a1215;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+      margin-top: 8px;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 6px;
+      text-align: center;
+    }
+    th { background: #242a36; color: var(--accent); }
+    .table-wrap { overflow-x: auto; }
+  </style>
+</head>
+<body>
+  <h1>نظام تحليل ومقارنة عينات الذهب</h1>
+
+  <div class="card">
+    <div class="grid">
+      <div>
+        <label>اسم / رقم العينة الأولى</label>
+        <input type="text" id="sampleAName" placeholder="عينة 1" />
+      </div>
+      <div>
+        <label>دقة / عيار العينة الأولى (من 1000)</label>
+        <input type="number" id="sampleAFiness" step="0.1" placeholder="مثال 875 أو 916" />
+      </div>
+      <div>
+        <label>اسم / رقم العينة الثانية (للمقارنة)</label>
+        <input type="text" id="sampleBName" placeholder="عينة 2" />
+      </div>
+      <div>
+        <label>دقة / عيار العينة الثانية (من 1000)</label>
+        <input type="number" id="sampleBFiness" step="0.1" placeholder="اختياري للمقارنة" />
+      </div>
+      <div>
+        <label>الوزن الإجمالي (جرام)</label>
+        <input type="number" id="weight" step="0.01" placeholder="مثال 12.50" />
+      </div>
+      <div>
+        <label>حد التنبيه المسموح (فرق الأجزاء)</label>
+        <input type="number" id="threshold" step="0.1" value="3.0" />
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button onclick="analyzeSample()">تحليل وحفظ</button>
+      <button class="btn-secondary" onclick="exportBackup()">تصدير نسخة</button>
+      <button class="btn-secondary" onclick="document.getElementById('importFile').click()">استيراد نسخة</button>
+    </div>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(event)" />
+
+    <div id="output" class="result-box">أدخل بيانات العينة ثم اضغط "تحليل وحفظ".</div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <strong>السجل المحفوظ محلياً</strong>
+      <button class="btn-danger" style="width:auto; padding:6px 12px;" onclick="clearRecords()">مسح السجل</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>الوقت</th>
+            <th>العينة 1</th>
+            <th>الدقة 1</th>
+            <th>العينة 2</th>
+            <th>الفرق / النقص</th>
+            <th>الحالة</th>
+          </tr>
+        </thead>
+        <tbody id="recordsBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'gold_assay_records_v1';
+
+    function speakArabic(text) {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'ar-SA';
+      utter.rate = 1.0;
+      window.speechSynthesis.speak(utter);
+    }
+
+    function formatNow() {
+      const d = new Date();
+      return d.toLocaleString('ar-YE', {
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit'
+      });
+    }
+
+    function getRecords() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      } catch {
+        return [];
+      }
+    }
+
+    function saveRecords(list) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+      renderRecords();
+    }
+
+    function analyzeSample() {
+      const nameA = document.getElementById('sampleAName').value.trim() || 'عينة A';
+      const finA = parseFloat(document.getElementById('sampleAFiness').value);
+      const nameB = document.getElementById('sampleBName').value.trim() || 'عينة B';
+      const finB = parseFloat(document.getElementById('sampleBFiness').value);
+      const weight = parseFloat(document.getElementById('weight').value) || 0;
+      const threshold = parseFloat(document.getElementById('threshold').value) || 3.0;
+
+      if (isNaN(finA) || finA <= 0 || finA > 1000) {
+        alert('يرجى إدخال دقة صحيحة للعينة الأولى بين 0 و 1000');
+        return;
+      }
+
+      const karatA = ((finA / 1000) * 24).toFixed(2);
+      const pureGoldA = weight > 0 ? ((weight * finA) / 1000).toFixed(3) : '—';
+
+      let diffText = 'لا توجد مقارنة';
+      let diffVal = 0;
+      let isExceeded = false;
+
+      if (!isNaN(finB) && finB > 0 && finB <= 1000) {
+        diffVal = Number((finA - finB).toFixed(2));
+        const absDiff = Math.abs(diffVal);
+        diffText = `${diffVal > 0 ? '+' : ''}${diffVal}`;
+        if (absDiff > threshold) {
+          isExceeded = true;
+        }
+      }
+
+      const timestamp = formatNow();
+      const outEl = document.getElementById('output');
+
+      let msgHtml = `
+        <div><strong>الوقت:</strong> ${timestamp}</div>
+        <div><strong>${nameA}:</strong> دقة ${finA} / 1000 — عيار تقريبي: <strong>${karatA}k</strong></div>
+        <div><strong>الذهب الخالص المقدر:</strong> ${pureGoldA} ${weight > 0 ? 'جم' : ''}</div>
+      `;
+
+      if (!isNaN(finB) && finB > 0) {
+        msgHtml += `<div><strong>مقارنة مع ${nameB} (${finB}):</strong> الفرق <strong>${diffText}</strong> جزء</div>`;
+      }
+
+      if (isExceeded) {
+        outEl.className = 'result-box alert-box';
+        msgHtml += `<div style="margin-top:6px; font-weight:bold;">تنبيه: تجاوز الحد المسموح (${threshold})!</div>`;
+        speakArabic(`تنبيه، تجاوز حد النقص أو الفرق في تحليل ${nameA}`);
+      } else {
+        outEl.className = 'result-box';
+        msgHtml += `<div style="margin-top:6px; color:#86efac;">الحالة: ضمن الحدود المسموحة</div>`;
+      }
+
+      outEl.innerHTML = msgHtml;
+
+      const records = getRecords();
+      records.unshift({
+        time: timestamp,
+        nameA,
+        finA,
+        nameB: !isNaN(finB) && finB > 0 ? nameB : '-',
+        diff: diffText,
+        status: isExceeded ? 'تجاوز الحد' : 'سليم'
+      });
+      saveRecords(records);
+    }
+
+    function renderRecords() {
+      const tbody = document.getElementById('recordsBody');
+      const records = getRecords();
+      tbody.innerHTML = records.map(r => `
+        <tr>
+          <td>${r.time}</td>
+          <td>${r.nameA}</td>
+          <td>${r.finA}</td>
+          <td>${r.nameB}</td>
+          <td>${r.diff}</td>
+          <td style="color:${r.status === 'تجاوز الحد' ? '#f87171' : '#4ade80'}">${r.status}</td>
+        </tr>
+      `).join('');
+    }
+
+    function exportBackup() {
+      const data = JSON.stringify(getRecords(), null, 2);
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `gold-assay-backup-${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importBackup(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(reader.result);
+          if (Array.isArray(parsed)) {
+            saveRecords(parsed);
+            alert('تم استيراد النسخة الاحتياطية بنجاح');
+          } else {
+            alert('ملف النسخة الاحتياطية غير صالح');
+          }
+        } catch {
+          alert('تعذر قراءة الملف');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function clearRecords() {
+      if (confirm('هل أنت متأكد من مسح جميع السجلات المحفوظة؟')) {
+        localStorage.removeItem(STORAGE_KEY);
+        renderRecords();
+      }
+    }
+
+    renderRecords();
+  </script>
+</body>
+</html>
