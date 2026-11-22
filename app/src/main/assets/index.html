@@ -580,13 +580,19 @@
   }
 
   @media print {
-    body { background: #fff !important; color: #000 !important; padding: 0 !important; }
-    .top-bar, .table-card, .history-section, .toast, #transferModal { display: none !important; }
-    .modal-overlay.active { position: static !important; background: none !important; display: block !important; padding: 0 !important; }
-    .modal-box { max-width: 100% !important; max-height: none !important; box-shadow: none !important; border: none !important; background: #fff !important; color: #000 !important; }
-    .modal-header .btn, .modal-footer { display: none !important; }
-    table.analysis-table { min-width: 100% !important; background: #fff !important; color: #000 !important; }
-    table.analysis-table th, table.analysis-table td { border: 1px solid #444 !important; color: #000 !important; background: #fff !important; }
+    @page { size: landscape; margin: 10mm; }
+    body { background: #fff !important; color: #111 !important; padding: 0 !important; direction: rtl; }
+    .top-bar, .history-section, .toast, #transferModal { display: none !important; }
+    .container { max-width: 100% !important; }
+    .summary-strip { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; gap: 6px !important; margin-bottom: 10px !important; }
+    .summary-box { background: #fff !important; color: #111 !important; border: 1px solid #777 !important; break-inside: avoid; }
+    .summary-label, .summary-val, .karat-sub { color: #111 !important; }
+    .table-card, .table-responsive { display: block !important; overflow: visible !important; width: 100% !important; }
+    table.analysis-table { width: 100% !important; min-width: 0 !important; font-size: 8pt !important; background: #fff !important; color: #111 !important; }
+    table.analysis-table th, table.analysis-table td { position: static !important; border: 1px solid #555 !important; color: #111 !important; background: #fff !important; padding: 4px 2px !important; height: auto !important; }
+    .cell-input { border: 0 !important; background: transparent !important; color: #111 !important; padding: 0 !important; min-width: 0 !important; font-size: 8pt !important; }
+    .state-ok, .state-bad, .calc-cell, .final-result-cell, .pair-diff-cell { background: #fff !important; color: #111 !important; }
+    .table-card { box-shadow: none !important; border: 0 !important; }
   }
 
 </style>
@@ -614,6 +620,7 @@
       </div>
 
       <button type="button" class="btn btn-save" onclick="saveCurrentAnalysis()">💾 حفظ التحليل</button>
+      <button type="button" class="btn btn-export" onclick="exportAnalysisPDF()">📄 تصدير تقرير PDF</button>
       <button type="button" class="btn btn-export" onclick="exportBackup()">📤 تصدير نسخة احتياطية</button>
       <button type="button" class="btn btn-import" onclick="document.getElementById('importFile').click()">📥 استيراد نسخة احتياطية</button>
       <input type="file" id="importFile" accept=".json,application/json" style="display:none" onchange="importBackup(event)">
@@ -1651,6 +1658,23 @@
     } catch (err) {
       alert('تعذر قراءة النص: تأكد من لصق نص JSON صحيح ومنسوخ بالكامل.');
     }
+  }
+
+  // Export current analysis as a printable PDF report
+  function exportAnalysisPDF() {
+    const completed = document.getElementById('sumCompletedCount')?.textContent || '—';
+    if (completed.startsWith('0')) {
+      alert('أدخل بيانات العينات أولاً قبل تصدير التقرير.');
+      return;
+    }
+    const oldTitle = document.title;
+    const dateTag = getLocalDateISO();
+    document.title = 'تقرير تحليل عينات الذهب - ' + dateTag;
+    showToast('اختر حفظ بتنسيق PDF من نافذة الطباعة');
+    setTimeout(() => {
+      window.print();
+      setTimeout(() => { document.title = oldTitle; }, 1000);
+    }, 250);
   }
 
   // Export JSON backup
