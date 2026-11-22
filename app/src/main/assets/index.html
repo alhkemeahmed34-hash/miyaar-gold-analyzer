@@ -1672,7 +1672,11 @@
     document.title = 'تقرير تحليل عينات الذهب - ' + dateTag;
     showToast('اختر حفظ بتنسيق PDF من نافذة الطباعة');
     setTimeout(() => {
-      window.print();
+      if (window.AndroidPrint && typeof window.AndroidPrint.printPage === 'function') {
+        window.AndroidPrint.printPage();
+      } else {
+        window.print();
+      }
       setTimeout(() => { document.title = oldTitle; }, 1000);
     }, 250);
   }
