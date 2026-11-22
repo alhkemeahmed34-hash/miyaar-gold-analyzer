@@ -82,7 +82,15 @@ public class MainActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-        if (webView != null && webView.canGoBack()) webView.goBack();
-        else super.onBackPressed();
+        if (webView == null) {
+            super.onBackPressed();
+            return;
+        }
+        // Let the web app close dialogs or return to its previous screen first.
+        webView.evaluateJavascript("typeof handleAndroidBack === 'function' ? handleAndroidBack() : false", value -> {
+            if (!"true".equals(value)) {
+                MainActivity.super.onBackPressed();
+            }
+        });
     }
 }
