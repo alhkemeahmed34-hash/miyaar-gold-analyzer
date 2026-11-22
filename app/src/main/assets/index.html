@@ -619,6 +619,73 @@
   body.page-history #historySection {display:block}
   @media(max-width:420px){.feature-grid{grid-template-columns:1fr}}
 </style>
+
+<style id="luxury-gold-theme">
+  :root {
+    --bg-main:#090b10; --bg-card:#151922; --header-bg:#10141c;
+    --header-text:#fff4d6; --gold-accent:#c6a15b; --gold-light:#292319;
+    --border-color:#35313a; --border-pair:#a8894c;
+    --text-primary:#f4f0e7; --text-muted:#aaa5a0;
+    --green-bg:#123c32; --green-text:#b8f0d8; --green-border:#28765f;
+    --red-bg:#51252b; --red-text:#ffd9dc; --red-border:#a64b55;
+    --calc-bg:#20232d; --row-pair-alt:#191d27;
+  }
+  body {background:radial-gradient(ellipse at 50% -18%,#493719 0%,#171820 34%,#080a0f 78%);color:#f4f0e7}
+  .top-bar,.modal-header {background:linear-gradient(110deg,#171a22,#252015 65%,#171a22);border-color:#80683b}
+  .app-title,.history-header h2 {color:#f1d89a}
+  .app-title span.badge {background:#332a1a;color:#f4d99a;border-color:#80683b}
+  .date-group {background:#1a1d26;border-color:#51452f}
+  .date-group label {color:#e6d4ad}
+  .date-group input[type="date"],.history-search {background:#10131b;color:#fff4d6;border-color:#665536}
+  .btn,.btn-save,.btn-export,.btn-import,.btn-view,.btn-load {background:linear-gradient(145deg,#302817,#1b1c22);color:#f3d99d;border:1px solid #8d713e}
+  .btn:hover {background:linear-gradient(145deg,#49391d,#252630)}
+  .btn-clear {background:#642a30;color:#fff;border-color:#a64b55}
+  .table-card {background:#151922;border:1px solid #8b7040;box-shadow:0 12px 32px #0008}
+  table.analysis-table {background:#171b24}
+  table.analysis-table th,table.analysis-table th.col-input-hdr,table.analysis-table th.col-calc-hdr,table.analysis-table th.col-result-hdr {
+    background:linear-gradient(180deg,#3a2d18,#211f20);color:#f5dfa9;border:1px solid #76603a;
+    font-weight:800;text-shadow:0 1px 1px #000;
+  }
+  table.analysis-table td {border:1px solid #373743;color:#f4f0e7}
+  tr.pair-group-2 {background:#1d202a}
+  tr.pair-end td {border-bottom:2px solid #a8894c}
+  table.analysis-table th:first-child,table.analysis-table td:first-child {background:#211e1a;color:#f4d99a;border-left:2px solid #b18b49}
+  table.analysis-table th:first-child {background:#392c19}
+  .cell-input {background:#10131b;color:#fff7e5;border:1px solid #514b43;border-radius:6px}
+  .cell-input::placeholder {color:#77716a}
+  .cell-input:focus {border-color:#d6b66e;background:#171923;box-shadow:0 0 0 2px #c6a15b2b}
+  .calc-cell {background:linear-gradient(135deg,#252936,#1d2029);color:#e8e2d4}
+  .final-result-cell {background:linear-gradient(135deg,#4a391b,#302719)!important;color:#ffe5a4!important;border:1px solid #9c793b;font-weight:900}
+  .pair-diff-cell {background:#29252a;color:#f0d59a}
+  .status-strip {background:#10131b;border-color:#4a4030}
+  .history-section,.summary-box,.modal-box {background:linear-gradient(145deg,#1b1e27,#14171e);border-color:#5f5035}
+  .history-card {background:#11151d;border-color:#51452f}
+  .history-card-top {color:#f3dfaF}
+  .summary-label,.history-card-meta {color:#b9b0a0}
+  .summary-val {color:#f4d99a}
+  .modal-header {border-bottom-color:#625033}
+  .modal-footer {background:#11151d;border-top-color:#51452f}
+  .toast {background:#1b1d24;color:#ffe8b4;border-color:#a08042}
+  .feature-head,.feature-card {background:linear-gradient(145deg,#282316,#151820 72%);border-color:#8c7040;box-shadow:0 10px 28px #0005}
+  .feature-head h2,.feature-stat strong {color:#f2d58e}
+  .feature-stat {background:linear-gradient(145deg,#211f1a,#171a22);border-color:#6c5836}
+  .feature-stat small,.feature-note {color:#c1b59c}
+  .feature-action {background:linear-gradient(145deg,#3a2d18,#201e20);border-color:#a88749;color:#f6dfa4}
+  .feature-action:active {transform:scale(.985)}
+  .feature-input {background:#10131b;border-color:#76603a;color:#fff4d6}
+  .home-emblem {background:linear-gradient(145deg,#47371b,#171820);border-color:#c4a15b}
+  .home-brand h1 {color:#f4d99a}
+  .home-tile {background:linear-gradient(145deg,#242117,#151820 72%);border-color:#75603b}
+  .home-tile.primary {background:linear-gradient(145deg,#493719,#1c1b1c 78%);border-color:#c6a15b}
+  .home-tile .tile-icon {background:linear-gradient(145deg,#493719,#211d18);border-color:#a88749;color:#f5d88e}
+  .home-section-title {color:#f2d58e}
+  .home-footer strong {color:#f0d18a}
+  @media(max-width:768px) {
+    table.analysis-table th {font-size:.76rem}
+    .cell-input {border-radius:5px}
+  }
+</style>
+
 </head>
 <body>
 
