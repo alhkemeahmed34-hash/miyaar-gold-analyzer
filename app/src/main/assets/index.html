@@ -665,7 +665,7 @@
   </div>
   <div class="home-footer">منشئ البرنامج <strong>أحمد جعفر</strong></div>
 </section>
-<section id="featurePage"><div id="featureContent"></div></section>
+<section id="featurePage"><div id="featureContent"></div><div id="historyMount"></div></section>
 <div class="home-back" style="padding:8px 6px 0"><button class="btn" type="button" onclick="backToHome()">⌂ الرئيسية</button></div>
 <div class="container">
   <!-- Header & Controls -->
@@ -1828,7 +1828,9 @@
   function renderFeaturePage(page) {
     const host = document.getElementById('featureContent');
     const history = document.getElementById('historySection');
-    history.style.display = 'none';
+    const historyMount = document.getElementById('historyMount');
+    historyMount.innerHTML = '';
+    if (history) history.style.display = 'none';
     if (page === 'stats') {
       const values = [
         ['العينات المكتملة', document.getElementById('sumCompletedCount')?.textContent || '0 / 6'],
@@ -1840,7 +1842,7 @@
     } else if (page === 'history') {
       host.innerHTML = featureHeader('التقارير والسجل','📄') + '<p class="feature-note">هنا تظهر التحاليل التي حفظتها، ويمكنك البحث عنها وعرض تفاصيلها أو استعادتها.</p>';
       history.style.display = 'block';
-      host.appendChild(history);
+      historyMount.appendChild(history);
       renderHistory();
     } else if (page === 'backup') {
       host.innerHTML = featureHeader('النسخ الاحتياطي','🗂️') +
