@@ -596,6 +596,29 @@
   }
 
 </style>
+
+<style>
+  #featurePage { display:none; max-width:900px; margin:0 auto; padding:10px 6px 28px; min-height:calc(100vh - 20px); }
+  body.page-open #homeScreen { display:none; }
+  body.page-open #featurePage { display:block; }
+  body.page-open .container { display:none !important; }
+  body.analysis-open #featurePage { display:none; }
+  body.analysis-open .container { display:block !important; }
+  .feature-head {display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0 18px;padding:14px;border:1px solid #725523;border-radius:14px;background:linear-gradient(145deg,#211b10,#101116);}
+  .feature-head h2 {color:#f5d889;font-size:1.2rem}
+  .feature-card {background:linear-gradient(145deg,#211b10,#101116 75%);border:1px solid #725523;border-radius:15px;padding:15px;margin-bottom:12px;color:#f5ead0}
+  .feature-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .feature-stat {padding:15px;border:1px solid #725523;border-radius:12px;background:#17130d}
+  .feature-stat small {display:block;color:#b7aa8b;margin-bottom:7px}
+  .feature-stat strong {font-size:1.25rem;color:#f5d889}
+  .feature-action {width:100%;margin:5px 0;padding:12px;border:1px solid #9c762f;border-radius:10px;background:#211b10;color:#f5d889;font:inherit;font-weight:700;text-align:center}
+  .feature-action.danger {background:#5b1717;border-color:#9b3333;color:#fff}
+  .feature-input {width:100%;padding:11px;border:1px solid #725523;border-radius:9px;background:#0f172a;color:#fff;font:inherit}
+  .feature-note {color:#b7aa8b;font-size:.84rem;line-height:1.7}
+  #historySection {display:none;margin-top:0}
+  body.page-history #historySection {display:block}
+  @media(max-width:420px){.feature-grid{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
 
@@ -642,6 +665,7 @@
   </div>
   <div class="home-footer">منشئ البرنامج <strong>أحمد جعفر</strong></div>
 </section>
+<section id="featurePage"><div id="featureContent"></div></section>
 <div class="home-back" style="padding:8px 6px 0"><button class="btn" type="button" onclick="backToHome()">⌂ الرئيسية</button></div>
 <div class="container">
   <!-- Header & Controls -->
@@ -730,7 +754,7 @@
   </div>
 
   <!-- Saved History Section -->
-  <section class="history-section">
+  <section class="history-section" id="historySection">
     <div class="history-header" style="flex-wrap:wrap; gap:8px;">
       <h2>📁 سجل التحاليل المحفوظة (<span id="historyCount">0</span>)</h2>
       <input type="text" id="historySearchInput" class="history-search" placeholder="🔎 بحث باسم العينة أو التاريخ..." oninput="renderHistory()">
@@ -783,6 +807,7 @@
           نص بيانات النسخة (للتصدير بالنسخ أو اللصق للاستيراد):
         </label>
         <textarea id="transferTextarea" rows="7" dir="ltr" placeholder="الصق هنا نص النسخة الاحتياطية المنسوخ من النسخة السابقة..." style="width:100%; background:#0f172a; color:#f8fafc; border:1px solid #334155; border-radius:6px; padding:8px; font-family:monospace; font-size:0.78rem; resize:vertical;"></textarea>
+        <button type="button" class="btn btn-clear btn-sm" style="margin-top:8px" onclick="clearTransferText()">🧹 مسح النص بالكامل</button>
       </div>
 
       <div style="display:flex; align-items:center; gap:8px; font-size:0.82rem; color:#cbd5e1;">
@@ -1770,33 +1795,96 @@
     reader.readAsText(file);
   }
 
-  // Main navigation: keep the original analysis workspace intact.
-  function openAnalysisPage() {
-    document.body.classList.add('analysis-open');
+  // Independent application sections and navigation history.
+  let appPageStack = ['home'];
+  let currentAppPage = 'home';
+
+  function setAppPage(page) {
+    currentAppPage = page;
+    document.body.classList.remove('analysis-open','page-open','page-history');
+    if (page === 'analysis') {
+      document.body.classList.add('analysis-open');
+    } else if (page !== 'home') {
+      document.body.classList.add('page-open');
+      if (page === 'history') document.body.classList.add('page-history');
+      renderFeaturePage(page);
+    }
+    document.querySelector('.home-back').style.display = page === 'home' ? 'none' : 'block';
     window.scrollTo({top:0,behavior:'smooth'});
   }
+
+  function navigateApp(page) {
+    if (page === currentAppPage) return;
+    appPageStack.push(page);
+    setAppPage(page);
+  }
+
+  function openAnalysisPage() { navigateApp('analysis'); }
   function backToHome() {
-    document.body.classList.remove('analysis-open');
-    window.scrollTo({top:0,behavior:'smooth'});
+    appPageStack = ['home'];
+    setAppPage('home');
   }
-  function openSummarySection() {
-    openAnalysisPage();
-    setTimeout(() => document.getElementById('labSummaryStrip')?.scrollIntoView({behavior:'smooth',block:'start'}), 120);
+
+  function renderFeaturePage(page) {
+    const host = document.getElementById('featureContent');
+    const history = document.getElementById('historySection');
+    history.style.display = 'none';
+    if (page === 'stats') {
+      const values = [
+        ['العينات المكتملة', document.getElementById('sumCompletedCount')?.textContent || '0 / 6'],
+        ['متوسط النتيجة النهائية', document.getElementById('sumAvgResult')?.textContent || '—'],
+        ['العيار التقديري', document.getElementById('sumEstimatedKarat')?.textContent || '—'],
+        ['حالة أزواج العينات', document.getElementById('sumPairsHealth')?.textContent || '—']
+      ];
+      host.innerHTML = featureHeader('الإحصائيات','📊') + '<div class="feature-grid">' + values.map(v=>'<div class="feature-stat"><small>'+v[0]+'</small><strong>'+v[1]+'</strong></div>').join('') + '</div><p class="feature-note" style="margin-top:14px">هذه الإحصائيات تتحدث تلقائياً مع إدخال أو تعديل بيانات العينات في صفحة التحليل.</p><button class="feature-action" onclick="openAnalysisPage()">فتح صفحة التحليل</button>';
+    } else if (page === 'history') {
+      host.innerHTML = featureHeader('التقارير والسجل','📄') + '<p class="feature-note">هنا تظهر التحاليل التي حفظتها، ويمكنك البحث عنها وعرض تفاصيلها أو استعادتها.</p>';
+      history.style.display = 'block';
+      host.appendChild(history);
+      renderHistory();
+    } else if (page === 'backup') {
+      host.innerHTML = featureHeader('النسخ الاحتياطي','🗂️') +
+        '<div class="feature-card"><h3>حفظ بياناتك</h3><p class="feature-note">صدّر نسخة من العينات والسجل حتى تتمكن من نقلها أو استعادتها لاحقاً.</p><button class="feature-action" onclick="exportBackup()">📤 تصدير نسخة احتياطية إلى ملف</button><button class="feature-action" onclick="document.getElementById(\'importFile\').click()">📥 استيراد نسخة من ملف</button><button class="feature-action" onclick="openTransferModal()">🔄 نقل البيانات بين نسخ التطبيق</button><button class="feature-action" onclick="copyBackupText()">📋 نسخ بيانات هذه النسخة</button></div>';
+    } else if (page === 'compare') {
+      const pairs = [0,1,2].map(i=>({label:'المجموعة '+(i+1),value:document.getElementById('pairDiff_'+i)?.textContent || 'بانتظار العينتين'}));
+      host.innerHTML = featureHeader('مقارنة العينات','⚖️') + '<div class="feature-card"><p class="feature-note">مقارنة مستقلة لفروق كل زوج من العينات. أدخل النتائج في صفحة التحليل لتظهر المقارنة هنا.</p>' + pairs.map(p=>'<div class="feature-stat" style="margin-top:9px"><small>'+p.label+'</small><strong>'+p.value+'</strong></div>').join('') + '</div><button class="feature-action" onclick="openAnalysisPage()">إدخال أو تعديل العينات</button>';
+    } else if (page === 'calculator') {
+      host.innerHTML = featureHeader('حاسبة العيارات','🧮') + '<div class="feature-card"><label>النتيجة بالألفية (‰)</label><input id="karatPermille" class="feature-input" type="number" step="any" placeholder="مثال: 875" oninput="calculateKarat()"><div class="feature-stat" style="margin-top:12px"><small>العيار بالقيراط</small><strong id="karatOutput">—</strong></div><hr style="border-color:#725523;margin:16px 0"><label>العيار بالقيراط (من 24)</label><input id="karatInput" class="feature-input" type="number" min="0" max="24" step="any" placeholder="مثال: 21" oninput="calculatePermille()"><div class="feature-stat" style="margin-top:12px"><small>النقاوة بالألفية (‰)</small><strong id="permilleOutput">—</strong></div><p class="feature-note" style="margin-top:12px">التحويل: القيراط ÷ 24 × 1000، أو الألفية ÷ 1000 × 24.</p></div>';
+    }
   }
-  function openHistorySection() {
-    openAnalysisPage();
-    setTimeout(() => document.querySelector('.history-section')?.scrollIntoView({behavior:'smooth',block:'start'}), 120);
+  function featureHeader(title,icon) {
+    return '<div class="feature-head"><h2>'+icon+' '+title+'</h2><button class="btn" onclick="goBackOnePage()">رجوع</button></div>';
   }
-  function openBackupTools() {
-    openAnalysisPage();
-    setTimeout(() => document.querySelector('.controls-bar')?.scrollIntoView({behavior:'smooth',block:'center'}), 120);
+  function openSummarySection(){ navigateApp('stats'); }
+  function openHistorySection(){ navigateApp('history'); }
+  function openBackupTools(){ navigateApp('backup'); }
+  function openComparisonSection(){ navigateApp('compare'); }
+  function showComingSoon(){ navigateApp('calculator'); }
+  function calculateKarat(){
+    const v=parseFloat(document.getElementById('karatPermille')?.value);
+    document.getElementById('karatOutput').textContent=Number.isFinite(v)&&v>=0?(v/1000*24).toFixed(2)+' قيراط':'—';
   }
-  function openComparisonSection() {
-    openAnalysisPage();
-    setTimeout(() => document.getElementById('mainTable')?.scrollIntoView({behavior:'smooth',block:'start'}), 120);
+  function calculatePermille(){
+    const v=parseFloat(document.getElementById('karatInput')?.value);
+    document.getElementById('permilleOutput').textContent=Number.isFinite(v)&&v>=0?(v/24*1000).toFixed(1)+' ‰':'—';
   }
-  function showComingSoon() {
-    alert('قسم حاسبة العيارات قيد التجهيز، وسيُضاف دون التأثير على قسم التحليل الحالي.');
+  function clearTransferText(){
+    const ta=document.getElementById('transferTextarea');
+    if(ta){ta.value='';ta.focus();showToast('🧹 تم مسح النص بالكامل');}
+  }
+  function goBackOnePage(){
+    if(appPageStack.length>1) appPageStack.pop();
+    setAppPage(appPageStack[appPageStack.length-1] || 'home');
+  }
+  function handleAndroidBack(){
+    const activeModal=document.querySelector('.modal-overlay.active');
+    if(activeModal){
+      if(activeModal.id==='transferModal') closeTransferModal();
+      else if(activeModal.id==='viewModal') closeModal();
+      return true;
+    }
+    if(currentAppPage!=='home'){goBackOnePage();return true;}
+    return false;
   }
 
   // Initialize application
@@ -1806,6 +1894,7 @@
     syncInputsFromDraft();
     renderHistory();
     startPhoneClock();
+    setAppPage('home');
   });
 </script>
 
