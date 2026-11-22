@@ -599,6 +599,50 @@
 </head>
 <body>
 
+<style>
+  body { background: radial-gradient(ellipse at 50% -15%, #4b3510 0%, #17130d 34%, #07090d 78%); }
+  .home-screen { max-width:900px; margin:0 auto; min-height:calc(100vh - 20px); padding:24px 12px 30px; display:flex; flex-direction:column; }
+  .home-brand { text-align:center; padding:24px 12px 28px; }
+  .home-emblem { width:104px; height:104px; margin:0 auto 16px; border-radius:30px; display:grid; place-items:center; font-size:52px; color:#f8d879; background:linear-gradient(145deg,#33250e,#0d0c0a); border:1px solid #b98b35; box-shadow:0 0 34px #b8893040,inset 0 0 22px #e6b94a20; }
+  .home-brand h1 { color:#f5d889; font-size:clamp(1.55rem,5vw,2.25rem); margin-bottom:8px; text-shadow:0 2px 16px #c18a3544; }
+  .home-brand p { color:#c4b58e; font-size:.94rem; }
+  .home-rule { width:100px; height:2px; margin:18px auto 0; background:linear-gradient(90deg,transparent,#d5a843,transparent); }
+  .home-section-title { color:#f1d58d; font-size:1.05rem; margin:8px 2px 14px; }
+  .home-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+  .home-tile { min-height:132px; border-radius:18px; padding:18px 12px; text-align:center; color:#f5ead0; border:1px solid #725523; background:linear-gradient(145deg,#211b10,#101116 72%); box-shadow:0 8px 24px #0006,inset 0 1px #ffffff0b; cursor:pointer; font-family:inherit; }
+  .home-tile:active { transform:scale(.98); }
+  .home-tile .tile-icon { width:54px; height:54px; display:grid; place-items:center; margin:0 auto 10px; border-radius:16px; font-size:28px; color:#f5d47b; background:linear-gradient(145deg,#483415,#21190d); border:1px solid #9c762f; }
+  .home-tile strong { display:block; font-size:1rem; margin-bottom:4px; }
+  .home-tile small { color:#b7aa8b; font-size:.76rem; }
+  .home-tile.primary { border-color:#d2a647; background:linear-gradient(145deg,#38290f,#17130c 75%); }
+  .home-tile.soon { opacity:.78; }
+  .home-footer { text-align:center; color:#a99a78; font-size:.8rem; margin-top:auto; padding:34px 8px 8px; }
+  .home-footer strong { color:#e6c574; }
+  .home-back { display:none; margin:0 auto 10px; max-width:900px; }
+  body.analysis-open .home-screen { display:none; }
+  body.analysis-open .home-back { display:block; }
+  body:not(.analysis-open) .container { display:none; }
+  @media(min-width:600px) { .home-grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; } .home-tile { min-height:150px; padding:22px 14px; } }
+</style>
+<section class="home-screen" id="homeScreen">
+  <div class="home-brand">
+    <div class="home-emblem">⚖️</div>
+    <h1>تحليل عينات الذهب</h1>
+    <p>منصة متخصصة لتنظيم وتحليل نتائج العينات</p>
+    <div class="home-rule"></div>
+  </div>
+  <h2 class="home-section-title">اختر القسم الذي تريد الدخول إليه</h2>
+  <div class="home-grid">
+    <button class="home-tile primary" onclick="openAnalysisPage()"><span class="tile-icon">⚖️</span><strong>التحليل</strong><small>إدخال العينات وحساب النتائج</small></button>
+    <button class="home-tile" onclick="openSummarySection()"><span class="tile-icon">📊</span><strong>الإحصائيات</strong><small>ملخص نتائج العينات</small></button>
+    <button class="home-tile" onclick="openHistorySection()"><span class="tile-icon">📄</span><strong>التقارير والسجل</strong><small>عرض التحاليل المحفوظة</small></button>
+    <button class="home-tile" onclick="openBackupTools()"><span class="tile-icon">🗂️</span><strong>النسخ الاحتياطي</strong><small>حفظ البيانات واستعادتها</small></button>
+    <button class="home-tile" onclick="openComparisonSection()"><span class="tile-icon">⚖️</span><strong>مقارنة العينات</strong><small>فحص فروق أزواج العينات</small></button>
+    <button class="home-tile soon" onclick="showComingSoon()"><span class="tile-icon">🧮</span><strong>حاسبة العيارات</strong><small>قسم قيد التجهيز</small></button>
+  </div>
+  <div class="home-footer">منشئ البرنامج <strong>أحمد جعفر</strong></div>
+</section>
+<div class="home-back" style="padding:8px 6px 0"><button class="btn" type="button" onclick="backToHome()">⌂ الرئيسية</button></div>
 <div class="container">
   <!-- Header & Controls -->
   <header class="top-bar">
@@ -1724,6 +1768,35 @@
       }
     };
     reader.readAsText(file);
+  }
+
+  // Main navigation: keep the original analysis workspace intact.
+  function openAnalysisPage() {
+    document.body.classList.add('analysis-open');
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  function backToHome() {
+    document.body.classList.remove('analysis-open');
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  function openSummarySection() {
+    openAnalysisPage();
+    setTimeout(() => document.getElementById('labSummaryStrip')?.scrollIntoView({behavior:'smooth',block:'start'}), 120);
+  }
+  function openHistorySection() {
+    openAnalysisPage();
+    setTimeout(() => document.querySelector('.history-section')?.scrollIntoView({behavior:'smooth',block:'start'}), 120);
+  }
+  function openBackupTools() {
+    openAnalysisPage();
+    setTimeout(() => document.querySelector('.controls-bar')?.scrollIntoView({behavior:'smooth',block:'center'}), 120);
+  }
+  function openComparisonSection() {
+    openAnalysisPage();
+    setTimeout(() => document.getElementById('mainTable')?.scrollIntoView({behavior:'smooth',block:'start'}), 120);
+  }
+  function showComingSoon() {
+    alert('قسم حاسبة العيارات قيد التجهيز، وسيُضاف دون التأثير على قسم التحليل الحالي.');
   }
 
   // Initialize application
