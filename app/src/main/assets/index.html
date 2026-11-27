@@ -1033,7 +1033,7 @@
       inventoryItems.forEach(item => {
         const opt = document.createElement('option');
         opt.value = item.id;
-        opt.textContent = item.name + ' — رقم ' + String(item.number).padStart(3, '0') + ' — المتبقي ' + formatDisplay(getInventoryBalance(item), 3) + ' جم';
+        opt.textContent = item.name + ' — رقم ' + String(item.number).padStart(3, '0') + ' — المتبقي ' + formatInventoryWeight(getInventoryBalance(item)) + ' جم';
         sel.appendChild(opt);
       });
       sel.value = selected;
@@ -1089,10 +1089,10 @@
     const totalReceived = inventoryItems.reduce((sum, item) => sum + (parseNum(item.receivedWeight) || 0), 0);
     const totalUsed = inventoryItems.reduce((sum, item) => sum + getInventoryUsed(item.id), 0);
     let html = featureHeader('مخزون الذهب','📒');
-    html += '<div class="feature-grid"><div class="feature-stat"><small>إجمالي الذهب المستلم</small><strong>' + formatDisplay(totalReceived, 3) + ' جم</strong></div><div class="feature-stat"><small>إجمالي المستخدم للعينات</small><strong>' + formatDisplay(totalUsed, 3) + ' جم</strong></div></div>';
+    html += '<div class="feature-grid"><div class="feature-stat"><small>إجمالي الذهب المستلم</small><strong>' + formatInventoryWeight(totalReceived) + ' جم</strong></div><div class="feature-stat"><small>إجمالي المستخدم للعينات</small><strong>' + formatInventoryWeight(totalUsed) + ' جم</strong></div></div>';
     html += '<div class="feature-card"><h3>إضافة قطعة ذهب جديدة</h3><p class="feature-note">اكتب اسم القطعة والوزن المستلم. سيُنشأ لها رقم مستقل تلقائيًا، ويمكن تكرار الاسم لقطع مختلفة.</p>';
     html += '<form onsubmit="addInventoryItem(event)"><div class="inventory-form-grid"><div class="inventory-field"><label for="inventoryName">اسم القطعة</label><input class="feature-input" id="inventoryName" required placeholder="مثال: أحمد"></div>';
-    html += '<div class="inventory-field"><label for="inventoryWeight">الوزن المستلم (جرام)</label><input class="feature-input" id="inventoryWeight" type="number" min="0.001" step="any" inputmode="decimal" required placeholder="مثال: 100"></div>';
+    html += '<div class="inventory-field"><label for="inventoryWeight">الوزن المستلم (جرام)</label><input class="feature-input" id="inventoryWeight" type="number" min="0.001" step="any" inputmode="decimal" required placeholder="مثال: 0.50"></div>';
     html += '<div class="inventory-field"><label for="inventoryDate">تاريخ الاستلام</label><input class="feature-input" id="inventoryDate" type="date" value="' + getLocalDateISO() + '"></div>';
     html += '<div class="inventory-field"><label for="inventoryNote">ملاحظات (اختياري)</label><input class="feature-input" id="inventoryNote" placeholder="اسم المدير أو ملاحظة"></div></div><button class="feature-action" type="submit">＋ تسجيل الذهب في المخزون</button></form></div>';
     if (!inventoryItems.length) html += '<div class="inventory-empty">لا توجد قطع مسجلة بعد. أضف أول قطعة من النموذج أعلاه.</div>';
@@ -1101,12 +1101,12 @@
       const used = movements.reduce((sum, m) => sum + m.weight, 0);
       const balance = getInventoryBalance(item);
       html += '<div class="inventory-card"><div class="inventory-card-head"><div><h3>' + escapeHtml(item.name) + '</h3><small class="feature-note">تاريخ الاستلام: ' + escapeHtml(item.date || '—') + '</small></div><span class="inventory-number">رقم القطعة ' + String(item.number).padStart(3, '0') + '</span></div>';
-      html += '<div class="feature-grid"><div class="feature-stat"><small>الوزن المستلم</small><strong>' + formatDisplay(parseNum(item.receivedWeight), 3) + ' جم</strong></div><div class="feature-stat"><small>مجموع العينات المسحوبة</small><strong>' + formatDisplay(used, 3) + ' جم</strong></div></div>';
-      html += '<div style="margin:12px 0 4px;color:#b7aa8b">المتبقي من القطعة</div><div class="inventory-balance">' + formatDisplay(balance, 3) + ' جم</div>';
+      html += '<div class="feature-grid"><div class="feature-stat"><small>الوزن المستلم</small><strong>' + formatInventoryWeight(parseNum(item.receivedWeight)) + ' جم</strong></div><div class="feature-stat"><small>مجموع العينات المسحوبة</small><strong>' + formatInventoryWeight(used) + ' جم</strong></div></div>';
+      html += '<div style="margin:12px 0 4px;color:#b7aa8b">المتبقي من القطعة</div><div class="inventory-balance">' + formatInventoryWeight(balance) + ' جم</div>';
       if (item.note) html += '<p class="feature-note" style="margin-top:6px">' + escapeHtml(item.note) + '</p>';
       html += '<h4 style="margin-top:14px;color:#f5d889">سجل العينات المأخوذة (' + movements.length + ')</h4>';
       if (!movements.length) html += '<p class="feature-note">لم تُسحب عينات من هذه القطعة بعد.</p>';
-      movements.slice().reverse().forEach(m => { html += '<div class="inventory-movement"><span>' + escapeHtml(m.sampleName) + '<br><small>' + escapeHtml(m.date || 'بدون تاريخ') + (m.time ? ' • ' + escapeHtml(m.time) : '') + '</small></span><strong>− ' + formatDisplay(m.weight, 3) + ' جم</strong></div>'; });
+      movements.slice().reverse().forEach(m => { html += '<div class="inventory-movement"><span>' + escapeHtml(m.sampleName) + '<br><small>' + escapeHtml(m.date || 'بدون تاريخ') + (m.time ? ' • ' + escapeHtml(m.time) : '') + '</small></span><strong>− ' + formatInventoryWeight(m.weight) + ' جم</strong></div>'; });
       html += '<div class="history-card-actions"><button class="btn btn-view btn-sm" onclick="editInventoryItem(\'' + item.id + '\')">✏️ تعديل</button><button class="btn btn-clear btn-sm" onclick="deleteInventoryItem(\'' + item.id + '\')">🗑️ حذف</button></div></div>';
     });
     host.innerHTML = html;
@@ -1127,6 +1127,17 @@
     // Avoid -0.0
     const fixed = num.toFixed(decimals);
     return Number(fixed) === 0 ? (0).toFixed(decimals) : fixed;
+  }
+
+  // Format inventory weights in grams: keep at least 2 decimals,
+  // while retaining the 3rd decimal when milligram precision is needed.
+  function formatInventoryWeight(num) {
+    if (num === null || num === undefined || !Number.isFinite(num)) return '—';
+    let value = num.toFixed(3);
+    while (value.includes('.') && value.endsWith('0') && value.split('.')[1].length > 2) {
+      value = value.slice(0, -1);
+    }
+    return value;
   }
 
   // Show toast message
