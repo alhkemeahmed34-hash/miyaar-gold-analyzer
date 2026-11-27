@@ -623,6 +623,15 @@
   .inventory-balance{font-size:1.35rem;font-weight:800;color:#f5d889}
   .inventory-movement{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid #3b3324;font-size:.82rem;color:#d8c9a6}
   .inventory-select{width:100%;min-width:125px;padding:6px 4px;border:1px solid #80683b;border-radius:5px;background:#10141c;color:#f5d889;font:inherit;font-size:.78rem}
+  .inventory-summary-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:12px}
+  .inventory-summary-grid .feature-stat{padding:10px;min-width:0;text-align:center}
+  .inventory-summary-grid .feature-stat small{font-size:.74rem;line-height:1.4}
+  .inventory-summary-grid .feature-stat strong{font-size:1.05rem;overflow-wrap:anywhere}
+  .inventory-ledger-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:9px 0}
+  .inventory-ledger-cell{min-width:0;padding:8px 4px;border:1px solid #725523;border-radius:9px;background:#17130d;text-align:center}
+  .inventory-ledger-cell small{display:block;color:#b7aa8b;font-size:.68rem;line-height:1.35;margin-bottom:5px}
+  .inventory-ledger-cell strong{display:block;color:#f5d889;font-size:.88rem;overflow-wrap:anywhere;direction:ltr}
+  .inventory-ledger-cell.balance{border-color:#a8894c;background:#211b10}
   .inventory-empty{padding:18px;text-align:center;color:#b7aa8b;border:1px dashed #725523;border-radius:12px}
   @media(max-width:420px){.inventory-form-grid{grid-template-columns:1fr}}
   #historySection {display:none;margin-top:0}
@@ -1089,7 +1098,8 @@
     const totalReceived = inventoryItems.reduce((sum, item) => sum + (parseNum(item.receivedWeight) || 0), 0);
     const totalUsed = inventoryItems.reduce((sum, item) => sum + getInventoryUsed(item.id), 0);
     let html = featureHeader('مخزون الذهب','📒');
-    html += '<div class="feature-grid"><div class="feature-stat"><small>إجمالي الذهب المستلم</small><strong>' + formatInventoryWeight(totalReceived) + ' جم</strong></div><div class="feature-stat"><small>إجمالي المستخدم للعينات</small><strong>' + formatInventoryWeight(totalUsed) + ' جم</strong></div></div>';
+    const totalRemaining = totalReceived - totalUsed;
+    html += '<div class="inventory-summary-grid"><div class="feature-stat"><small>إجمالي الذهب المستلم</small><strong>' + formatInventoryWeight(totalReceived) + ' جم</strong></div><div class="feature-stat"><small>إجمالي الذهب المتبقي</small><strong>' + formatInventoryWeight(totalRemaining) + ' جم</strong></div></div>';
     html += '<div class="feature-card"><h3>إضافة قطعة ذهب جديدة</h3><p class="feature-note">اكتب اسم القطعة والوزن المستلم. سيُنشأ لها رقم مستقل تلقائيًا، ويمكن تكرار الاسم لقطع مختلفة.</p>';
     html += '<form onsubmit="addInventoryItem(event)"><div class="inventory-form-grid"><div class="inventory-field"><label for="inventoryName">اسم القطعة</label><input class="feature-input" id="inventoryName" required placeholder="مثال: أحمد"></div>';
     html += '<div class="inventory-field"><label for="inventoryWeight">الوزن المستلم (جرام)</label><input class="feature-input" id="inventoryWeight" type="number" min="0.001" step="any" inputmode="decimal" required placeholder="مثال: 0.50"></div>';
@@ -1101,8 +1111,7 @@
       const used = movements.reduce((sum, m) => sum + m.weight, 0);
       const balance = getInventoryBalance(item);
       html += '<div class="inventory-card"><div class="inventory-card-head"><div><h3>' + escapeHtml(item.name) + '</h3><small class="feature-note">تاريخ الاستلام: ' + escapeHtml(item.date || '—') + '</small></div><span class="inventory-number">رقم القطعة ' + String(item.number).padStart(3, '0') + '</span></div>';
-      html += '<div class="feature-grid"><div class="feature-stat"><small>الوزن المستلم</small><strong>' + formatInventoryWeight(parseNum(item.receivedWeight)) + ' جم</strong></div><div class="feature-stat"><small>مجموع العينات المسحوبة</small><strong>' + formatInventoryWeight(used) + ' جم</strong></div></div>';
-      html += '<div style="margin:12px 0 4px;color:#b7aa8b">المتبقي من القطعة</div><div class="inventory-balance">' + formatInventoryWeight(balance) + ' جم</div>';
+      html += '<div class="inventory-ledger-grid"><div class="inventory-ledger-cell"><small>الذهب المستلم</small><strong>' + formatInventoryWeight(parseNum(item.receivedWeight)) + ' جم</strong></div><div class="inventory-ledger-cell"><small>المسحوب للعينات</small><strong>' + formatInventoryWeight(used) + ' جم</strong></div><div class="inventory-ledger-cell balance"><small>المتبقي من القطعة</small><strong>' + formatInventoryWeight(balance) + ' جم</strong></div></div>';
       if (item.note) html += '<p class="feature-note" style="margin-top:6px">' + escapeHtml(item.note) + '</p>';
       html += '<h4 style="margin-top:14px;color:#f5d889">سجل العينات المأخوذة (' + movements.length + ')</h4>';
       if (!movements.length) html += '<p class="feature-note">لم تُسحب عينات من هذه القطعة بعد.</p>';
@@ -1133,6 +1142,7 @@
   // while retaining the 3rd decimal when milligram precision is needed.
   function formatInventoryWeight(num) {
     if (num === null || num === undefined || !Number.isFinite(num)) return '—';
+    if (Math.abs(num - Math.round(num)) < 0.0000001) return String(Math.round(num));
     let value = num.toFixed(3);
     while (value.includes('.') && value.endsWith('0') && value.split('.')[1].length > 2) {
       value = value.slice(0, -1);
