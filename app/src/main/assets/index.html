@@ -1098,8 +1098,7 @@
     const totalReceived = inventoryItems.reduce((sum, item) => sum + (parseNum(item.receivedWeight) || 0), 0);
     const totalUsed = inventoryItems.reduce((sum, item) => sum + getInventoryUsed(item.id), 0);
     let html = featureHeader('مخزون الذهب','📒');
-    const totalRemaining = totalReceived - totalUsed;
-    html += '<div class="inventory-summary-grid"><div class="feature-stat"><small>إجمالي الذهب المستلم</small><strong>' + formatInventoryWeight(totalReceived) + ' جم</strong></div><div class="feature-stat"><small>إجمالي الذهب المتبقي</small><strong>' + formatInventoryWeight(totalRemaining) + ' جم</strong></div></div>';
+
     html += '<div class="feature-card"><h3>إضافة قطعة ذهب جديدة</h3><p class="feature-note">اكتب اسم القطعة والوزن المستلم. سيُنشأ لها رقم مستقل تلقائيًا، ويمكن تكرار الاسم لقطع مختلفة.</p>';
     html += '<form onsubmit="addInventoryItem(event)"><div class="inventory-form-grid"><div class="inventory-field"><label for="inventoryName">اسم القطعة</label><input class="feature-input" id="inventoryName" required placeholder="مثال: أحمد"></div>';
     html += '<div class="inventory-field"><label for="inventoryWeight">الوزن المستلم (جرام)</label><input class="feature-input" id="inventoryWeight" type="number" min="0.001" step="any" inputmode="decimal" required placeholder="مثال: 0.50"></div>';
@@ -1118,6 +1117,8 @@
       movements.slice().reverse().forEach(m => { html += '<div class="inventory-movement"><span>' + escapeHtml(m.sampleName) + '<br><small>' + escapeHtml(m.date || 'بدون تاريخ') + (m.time ? ' • ' + escapeHtml(m.time) : '') + '</small></span><strong>− ' + formatInventoryWeight(m.weight) + ' جم</strong></div>'; });
       html += '<div class="history-card-actions"><button class="btn btn-view btn-sm" onclick="editInventoryItem(\'' + item.id + '\')">✏️ تعديل</button><button class="btn btn-clear btn-sm" onclick="deleteInventoryItem(\'' + item.id + '\')">🗑️ حذف</button></div></div>';
     });
+    const totalRemaining = totalReceived - totalUsed;
+    html += '<div class="inventory-summary-grid"><div class="feature-stat"><small>إجمالي الذهب المستلم</small><strong>' + formatInventoryWeight(totalReceived) + ' جم</strong></div><div class="feature-stat"><small>إجمالي الذهب المتبقي</small><strong>' + formatInventoryWeight(totalRemaining) + ' جم</strong></div></div>';
     host.innerHTML = html;
   }
 
