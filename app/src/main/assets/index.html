@@ -1378,6 +1378,18 @@
         const rowObj = currentDraft.rows[rowIdx];
         rowObj[field] = e.target.value;
 
+        if (field === 'sampleName' && String(rowObj.sampleName || '').trim()) {
+          const typedName = String(rowObj.sampleName).trim().toLocaleLowerCase();
+          const nameMatches = inventoryItems.filter(item => String(item.name || '').trim().toLocaleLowerCase() === typedName);
+          if (nameMatches.length === 1) {
+            rowObj.inventoryItemId = nameMatches[0].id;
+            const sourceSelect = document.getElementById('inventorySelect_' + rowIdx);
+            if (sourceSelect) sourceSelect.value = nameMatches[0].id;
+          } else if (nameMatches.length > 1 && !nameMatches.some(item => item.id === rowObj.inventoryItemId)) {
+            showToast('يوجد أكثر من قطعة بهذا الاسم؛ اختر رقم القطعة من خانة المخزون');
+          }
+        }
+
         if (field === 'goldWithSilver') {
           rowObj.goldSilverManual = true;
         }
@@ -1399,6 +1411,7 @@
 
         saveDraftToStorage();
         updateUI();
+        refreshInventorySelectors();
       });
     });
 
