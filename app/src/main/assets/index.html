@@ -1626,8 +1626,6 @@
         return {
           sampleNumber: c.sampleNumber,
           sampleName: c.sampleName,
-          inventoryItemId: currentDraft.rows[idx].inventoryItemId || '',
-          inventoryItemNumber: (inventoryItems.find(x => x.id === currentDraft.rows[idx].inventoryItemId) || {}).number || null,
           originalWeight: c.origW,
           requiredSilver: c.reqSilver,
           actualSilver: c.actS,
