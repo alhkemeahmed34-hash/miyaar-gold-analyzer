@@ -615,6 +615,16 @@
   .feature-action.danger {background:#5b1717;border-color:#9b3333;color:#fff}
   .feature-input {width:100%;padding:11px;border:1px solid #725523;border-radius:9px;background:#0f172a;color:#fff;font:inherit}
   .feature-note {color:#b7aa8b;font-size:.84rem;line-height:1.7}
+  .inventory-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+  .inventory-field label{display:block;color:#e6d4ad;font-size:.82rem;margin:0 0 6px}
+  .inventory-card{background:linear-gradient(145deg,#211b10,#101116 75%);border:1px solid #80683b;border-radius:14px;padding:14px;margin:12px 0;color:#f5ead0}
+  .inventory-card-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+  .inventory-number{color:#f5d889;font-weight:800;border:1px solid #80683b;border-radius:8px;padding:4px 9px;background:#17130d}
+  .inventory-balance{font-size:1.35rem;font-weight:800;color:#f5d889}
+  .inventory-movement{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid #3b3324;font-size:.82rem;color:#d8c9a6}
+  .inventory-select{width:100%;min-width:125px;padding:6px 4px;border:1px solid #80683b;border-radius:5px;background:#10141c;color:#f5d889;font:inherit;font-size:.78rem}
+  .inventory-empty{padding:18px;text-align:center;color:#b7aa8b;border:1px dashed #725523;border-radius:12px}
+  @media(max-width:420px){.inventory-form-grid{grid-template-columns:1fr}}
   #historySection {display:none;margin-top:0}
   body.page-history #historySection {display:block}
   @media(max-width:420px){.feature-grid{grid-template-columns:1fr}}
@@ -726,6 +736,7 @@
     <button class="home-tile primary" onclick="openAnalysisPage()"><span class="tile-icon">⚖️</span><strong>التحليل</strong><small>إدخال العينات وحساب النتائج</small></button>
     <button class="home-tile" onclick="openSummarySection()"><span class="tile-icon">📊</span><strong>الإحصائيات</strong><small>ملخص نتائج العينات</small></button>
     <button class="home-tile" onclick="openHistorySection()"><span class="tile-icon">📄</span><strong>التقارير والسجل</strong><small>عرض التحاليل المحفوظة</small></button>
+    <button class="home-tile" onclick="openInventorySection()"><span class="tile-icon">📒</span><strong>مخزون الذهب</strong><small>تسجيل القطع ومتابعة أوزان العينات</small></button>
     <button class="home-tile" onclick="openBackupTools()"><span class="tile-icon">🗂️</span><strong>النسخ الاحتياطي</strong><small>حفظ البيانات واستعادتها</small></button>
     <button class="home-tile" onclick="openComparisonSection()"><span class="tile-icon">⚖️</span><strong>مقارنة العينات</strong><small>فحص فروق أزواج العينات</small></button>
     <button class="home-tile soon" onclick="showComingSoon()"><span class="tile-icon">🧮</span><strong>حاسبة العيارات</strong><small>قسم قيد التجهيز</small></button>
@@ -792,6 +803,7 @@
           <tr>
             <th>رقم<br>العينة</th>
             <th class="col-input-hdr">اسم العينة</th>
+            <th class="col-input-hdr">قطعة الذهب<br>من المخزون</th>
             <th class="col-input-hdr">وزن العينة<br>الأصلي</th>
             <th class="col-calc-hdr">الفضة المطلوبة<br>× 2.8</th>
             <th class="col-input-hdr">الفضة<br>الفعلية</th>
@@ -963,6 +975,7 @@
       rows.push({
         sampleNumber: i + 1,
         sampleName: '',
+        inventoryItemId: '',
         originalWeight: '',
         actualSilver: '',
         goldWithSilver: '',
@@ -976,6 +989,128 @@
 
   let currentDraft = createEmptyDraft();
   let savedHistory = [];
+  let inventoryItems = [];
+  let inventoryCounter = 0;
+  const STORAGE_INVENTORY_KEY = 'gold_workshop_inventory_v1';
+
+  function saveInventoryToStorage() {
+    try { localStorage.setItem(STORAGE_INVENTORY_KEY, JSON.stringify(inventoryItems)); }
+    catch (e) { showToast('تعذر حفظ مخزون الذهب في ذاكرة الجهاز'); }
+  }
+
+  function getInventoryMovements(itemId) {
+    const movements = [];
+    const addRows = (rows, date, time, recordId) => {
+      if (!Array.isArray(rows)) return;
+      rows.forEach((row, index) => {
+        if (String(row.inventoryItemId || '') !== String(itemId)) return;
+        const weight = parseNum(row.originalWeight);
+        if (weight === null || weight <= 0) return;
+        movements.push({sampleName: row.sampleName || ('العينة ' + (index + 1)), sampleNumber: row.sampleNumber || index + 1, weight: weight, date: date || '', time: time || '', recordId: recordId || ''});
+      });
+    };
+    savedHistory.forEach(rec => {
+      if (currentDraft.savedRecordId && String(rec.id) === String(currentDraft.savedRecordId)) return;
+      addRows(rec.rawRows, rec.date, rec.time, rec.id);
+    });
+    addRows(currentDraft.rows, currentDraft.date, currentDraft.time, currentDraft.savedRecordId || 'draft');
+    return movements;
+  }
+
+  function getInventoryUsed(itemId) {
+    return getInventoryMovements(itemId).reduce((sum, m) => sum + m.weight, 0);
+  }
+
+  function getInventoryBalance(item) {
+    return (parseNum(item.receivedWeight) || 0) - getInventoryUsed(item.id);
+  }
+
+  function refreshInventorySelectors() {
+    document.querySelectorAll('.inventory-select').forEach(sel => {
+      const rowIndex = Number(sel.dataset.row);
+      const selected = currentDraft.rows[rowIndex] ? String(currentDraft.rows[rowIndex].inventoryItemId || '') : '';
+      sel.innerHTML = '<option value="">بدون ربط بالمخزون</option>';
+      inventoryItems.forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item.id;
+        opt.textContent = item.name + ' — رقم ' + String(item.number).padStart(3, '0') + ' — المتبقي ' + formatDisplay(getInventoryBalance(item), 3) + ' جم';
+        sel.appendChild(opt);
+      });
+      sel.value = selected;
+    });
+  }
+
+  function openInventorySection() { navigateApp('inventory'); }
+
+  function addInventoryItem(event) {
+    if (event) event.preventDefault();
+    const nameEl = document.getElementById('inventoryName');
+    const weightEl = document.getElementById('inventoryWeight');
+    const dateEl = document.getElementById('inventoryDate');
+    const noteEl = document.getElementById('inventoryNote');
+    const name = nameEl ? nameEl.value.trim() : '';
+    const weight = weightEl ? parseNum(weightEl.value) : null;
+    if (!name || weight === null || weight <= 0) { showToast('اكتب اسم القطعة ووزنًا صحيحًا أكبر من صفر'); return; }
+    const nextNumber = inventoryItems.reduce((max, item) => Math.max(max, Number(item.number) || 0), 0) + 1;
+    inventoryCounter += 1;
+    inventoryItems.unshift({id: 'inv-' + Date.now() + '-' + inventoryCounter, number: nextNumber, name: name, receivedWeight: String(weight), date: (dateEl && dateEl.value) || getLocalDateISO(), note: (noteEl && noteEl.value.trim()) || ''});
+    saveInventoryToStorage();
+    renderInventoryPage(document.getElementById('featureContent'));
+    refreshInventorySelectors();
+    showToast('تمت إضافة القطعة إلى مخزون الذهب');
+  }
+
+  function editInventoryItem(id) {
+    const item = inventoryItems.find(x => x.id === id);
+    if (!item) return;
+    const newName = prompt('اسم القطعة:', item.name);
+    if (newName === null) return;
+    const newWeight = prompt('الوزن المستلم بالجرام:', item.receivedWeight);
+    if (newWeight === null) return;
+    const parsedWeight = parseNum(newWeight);
+    if (!newName.trim() || parsedWeight === null || parsedWeight <= 0) { showToast('الاسم والوزن غير صحيحين'); return; }
+    const used = getInventoryUsed(id);
+    if (parsedWeight + 0.000001 < used) { showToast('لا يمكن جعل الوزن المستلم أقل من مجموع العينات المسحوبة'); return; }
+    item.name = newName.trim(); item.receivedWeight = String(parsedWeight);
+    saveInventoryToStorage(); renderInventoryPage(document.getElementById('featureContent')); refreshInventorySelectors();
+    showToast('تم تعديل بيانات القطعة');
+  }
+
+  function deleteInventoryItem(id) {
+    if (getInventoryMovements(id).length) { showToast('لا يمكن حذف قطعة لها عينات مرتبطة؛ احتفظ بسجلها'); return; }
+    if (!confirm('هل تريد حذف هذه القطعة من مخزون الذهب؟')) return;
+    inventoryItems = inventoryItems.filter(x => x.id !== id);
+    saveInventoryToStorage(); renderInventoryPage(document.getElementById('featureContent')); refreshInventorySelectors();
+    showToast('تم حذف القطعة');
+  }
+
+  function renderInventoryPage(host) {
+    if (!host) return;
+    const totalReceived = inventoryItems.reduce((sum, item) => sum + (parseNum(item.receivedWeight) || 0), 0);
+    const totalUsed = inventoryItems.reduce((sum, item) => sum + getInventoryUsed(item.id), 0);
+    let html = featureHeader('مخزون الذهب','📒');
+    html += '<div class="feature-grid"><div class="feature-stat"><small>إجمالي الذهب المستلم</small><strong>' + formatDisplay(totalReceived, 3) + ' جم</strong></div><div class="feature-stat"><small>إجمالي المستخدم للعينات</small><strong>' + formatDisplay(totalUsed, 3) + ' جم</strong></div></div>';
+    html += '<div class="feature-card"><h3>إضافة قطعة ذهب جديدة</h3><p class="feature-note">اكتب اسم القطعة والوزن المستلم. سيُنشأ لها رقم مستقل تلقائيًا، ويمكن تكرار الاسم لقطع مختلفة.</p>';
+    html += '<form onsubmit="addInventoryItem(event)"><div class="inventory-form-grid"><div class="inventory-field"><label for="inventoryName">اسم القطعة</label><input class="feature-input" id="inventoryName" required placeholder="مثال: أحمد"></div>';
+    html += '<div class="inventory-field"><label for="inventoryWeight">الوزن المستلم (جرام)</label><input class="feature-input" id="inventoryWeight" type="number" min="0.001" step="any" inputmode="decimal" required placeholder="مثال: 100"></div>';
+    html += '<div class="inventory-field"><label for="inventoryDate">تاريخ الاستلام</label><input class="feature-input" id="inventoryDate" type="date" value="' + getLocalDateISO() + '"></div>';
+    html += '<div class="inventory-field"><label for="inventoryNote">ملاحظات (اختياري)</label><input class="feature-input" id="inventoryNote" placeholder="اسم المدير أو ملاحظة"></div></div><button class="feature-action" type="submit">＋ تسجيل الذهب في المخزون</button></form></div>';
+    if (!inventoryItems.length) html += '<div class="inventory-empty">لا توجد قطع مسجلة بعد. أضف أول قطعة من النموذج أعلاه.</div>';
+    inventoryItems.forEach(item => {
+      const movements = getInventoryMovements(item.id);
+      const used = movements.reduce((sum, m) => sum + m.weight, 0);
+      const balance = getInventoryBalance(item);
+      html += '<div class="inventory-card"><div class="inventory-card-head"><div><h3>' + escapeHtml(item.name) + '</h3><small class="feature-note">تاريخ الاستلام: ' + escapeHtml(item.date || '—') + '</small></div><span class="inventory-number">رقم القطعة ' + String(item.number).padStart(3, '0') + '</span></div>';
+      html += '<div class="feature-grid"><div class="feature-stat"><small>الوزن المستلم</small><strong>' + formatDisplay(parseNum(item.receivedWeight), 3) + ' جم</strong></div><div class="feature-stat"><small>مجموع العينات المسحوبة</small><strong>' + formatDisplay(used, 3) + ' جم</strong></div></div>';
+      html += '<div style="margin:12px 0 4px;color:#b7aa8b">المتبقي من القطعة</div><div class="inventory-balance">' + formatDisplay(balance, 3) + ' جم</div>';
+      if (item.note) html += '<p class="feature-note" style="margin-top:6px">' + escapeHtml(item.note) + '</p>';
+      html += '<h4 style="margin-top:14px;color:#f5d889">سجل العينات المأخوذة (' + movements.length + ')</h4>';
+      if (!movements.length) html += '<p class="feature-note">لم تُسحب عينات من هذه القطعة بعد.</p>';
+      movements.slice().reverse().forEach(m => { html += '<div class="inventory-movement"><span>' + escapeHtml(m.sampleName) + '<br><small>' + escapeHtml(m.date || 'بدون تاريخ') + (m.time ? ' • ' + escapeHtml(m.time) : '') + '</small></span><strong>− ' + formatDisplay(m.weight, 3) + ' جم</strong></div>'; });
+      html += '<div class="history-card-actions"><button class="btn btn-view btn-sm" onclick="editInventoryItem(\'' + item.id + '\')">✏️ تعديل</button><button class="btn btn-clear btn-sm" onclick="deleteInventoryItem(\'' + item.id + '\')">🗑️ حذف</button></div></div>';
+    });
+    host.innerHTML = html;
+  }
 
   // Utility: parse finite float or return null
   function parseNum(val) {
@@ -1211,6 +1346,7 @@
       let rowHTML = `
         <td>${i + 1}</td>
         <td><input type="text" class="cell-input name-input" data-row="${i}" data-field="sampleName" placeholder="اسم العينة"></td>
+        <td><select class="inventory-select" id="inventorySelect_${i}" data-row="${i}" aria-label="قطعة الذهب من المخزون"><option value="">بدون ربط بالمخزون</option></select></td>
         <td><input type="number" step="any" inputmode="decimal" class="cell-input" data-row="${i}" data-field="originalWeight" placeholder="0.00"></td>
         <td class="calc-cell" id="reqSilver_${i}">—</td>
         <td><input type="number" step="any" inputmode="decimal" class="cell-input" id="actSilverInput_${i}" data-row="${i}" data-field="actualSilver" placeholder="0.00"></td>
@@ -1266,6 +1402,24 @@
       });
     });
 
+    tbody.querySelectorAll('.inventory-select').forEach(sel => {
+      sel.addEventListener('change', (e) => {
+        const rowIdx = Number(e.target.dataset.row);
+        const itemId = e.target.value;
+        currentDraft.rows[rowIdx].inventoryItemId = itemId;
+        const item = inventoryItems.find(x => x.id === itemId);
+        if (item && !String(currentDraft.rows[rowIdx].sampleName || '').trim()) {
+          currentDraft.rows[rowIdx].sampleName = item.name;
+          const nameInput = document.querySelector('[data-row="' + rowIdx + '"][data-field="sampleName"]');
+          if (nameInput) nameInput.value = item.name;
+        }
+        saveDraftToStorage();
+        updateUI();
+        const weight = parseNum(currentDraft.rows[rowIdx].originalWeight) || 0;
+        if (item && weight > 0 && weight > getInventoryBalance(item) + 0.000001) showToast('⚠️ وزن العينة أكبر من المتبقي في هذه القطعة');
+      });
+    });
+
     // Attach date & time listeners
     document.getElementById('analysisDate').addEventListener('change', (e) => {
       currentDraft.date = e.target.value;
@@ -1290,6 +1444,7 @@
       const field = inp.dataset.field;
       inp.value = currentDraft.rows[rowIdx][field] ?? '';
     });
+    refreshInventorySelectors();
     updateUI();
   }
 
@@ -1422,6 +1577,14 @@
     } catch (e) {
       console.warn('Could not load history', e);
     }
+
+    try {
+      const rawInventory = localStorage.getItem(STORAGE_INVENTORY_KEY);
+      if (rawInventory) {
+        const parsedInventory = JSON.parse(rawInventory);
+        if (Array.isArray(parsedInventory)) inventoryItems = parsedInventory;
+      }
+    } catch (e) { console.warn('Could not load gold inventory', e); }
   }
 
   function saveHistoryToStorage() {
@@ -1458,7 +1621,7 @@
     saveDraftToStorage();
 
     const record = {
-      id: Date.now().toString(),
+      id: currentDraft.savedRecordId || Date.now().toString(),
       savedAt: new Date().toISOString(),
       date: analysisDate,
       time: analysisTime,
@@ -1468,6 +1631,8 @@
         return {
           sampleNumber: c.sampleNumber,
           sampleName: c.sampleName,
+          inventoryItemId: currentDraft.rows[idx].inventoryItemId || '',
+          inventoryItemNumber: (inventoryItems.find(x => x.id === currentDraft.rows[idx].inventoryItemId) || {}).number || null,
           originalWeight: c.origW,
           requiredSilver: c.reqSilver,
           actualSilver: c.actS,
@@ -1487,7 +1652,11 @@
       pairs: pairs
     };
 
-    savedHistory.unshift(record);
+    const existingRecordIndex = savedHistory.findIndex(item => String(item.id) === String(record.id));
+    if (existingRecordIndex >= 0) savedHistory[existingRecordIndex] = record;
+    else savedHistory.unshift(record);
+    currentDraft.savedRecordId = record.id;
+    saveDraftToStorage();
     saveHistoryToStorage();
     renderHistory();
     showToast('✅ تم حفظ التحليل في السجل بنجاح');
@@ -1653,7 +1822,8 @@
     currentDraft = {
       date: rec.date,
       time: rec.time || getCurrentTimeHHMM(),
-      rows: JSON.parse(JSON.stringify(rec.rawRows))
+      rows: JSON.parse(JSON.stringify(rec.rawRows)),
+      savedRecordId: rec.id
     };
     saveDraftToStorage();
     syncInputsFromDraft();
@@ -1664,6 +1834,8 @@
   function deleteHistoryRecord(id) {
     if (!confirm('هل أنت متأكد من حذف هذا التحليل من السجل نهائيًا؟')) return;
     savedHistory = savedHistory.filter(r => r.id !== id);
+    if (String(currentDraft.savedRecordId || '') === String(id)) currentDraft.savedRecordId = null;
+    saveDraftToStorage();
     saveHistoryToStorage();
     renderHistory();
     showToast('🗑️ تم حذف التحليل من السجل');
@@ -1690,7 +1862,8 @@
       version: 1,
       exportedAt: new Date().toISOString(),
       currentDraft: currentDraft,
-      savedHistory: savedHistory
+      savedHistory: savedHistory,
+      inventoryItems: inventoryItems
     };
   }
 
@@ -1719,12 +1892,17 @@
     }
 
     if (mergeMode) {
+      const existingInventoryIds = new Set(inventoryItems.map(item => String(item.id)));
+      const importedInventory = Array.isArray(data.inventoryItems) ? data.inventoryItems.filter(item => !existingInventoryIds.has(String(item.id))) : [];
+      inventoryItems = [...importedInventory, ...inventoryItems];
       const existingIds = new Set(savedHistory.map(h => String(h.id)));
       const newItems = data.savedHistory.filter(h => !existingIds.has(String(h.id)));
       savedHistory = [...newItems, ...savedHistory];
     } else {
       savedHistory = data.savedHistory;
+      if (Array.isArray(data.inventoryItems)) inventoryItems = data.inventoryItems;
     }
+    saveInventoryToStorage();
     saveHistoryToStorage();
 
     if (data.currentDraft && Array.isArray(data.currentDraft.rows) && data.currentDraft.rows.length === NUM_ROWS) {
@@ -1734,6 +1912,8 @@
     }
 
     renderHistory();
+    if (currentAppPage === 'inventory') renderInventoryPage(document.getElementById('featureContent'));
+    refreshInventorySelectors();
     showToast('📥 تم نقل واستعادة بيانات العينات بنجاح');
     return true;
   }
@@ -1824,7 +2004,8 @@
       version: 1,
       exportedAt: new Date().toISOString(),
       currentDraft: currentDraft,
-      savedHistory: savedHistory
+      savedHistory: savedHistory,
+      inventoryItems: inventoryItems
     };
 
     const jsonStr = JSON.stringify(backupPayload, null, 2);
@@ -1871,6 +2052,7 @@
     document.body.classList.remove('analysis-open','page-open','page-history');
     if (page === 'analysis') {
       document.body.classList.add('analysis-open');
+      refreshInventorySelectors();
     } else if (page !== 'home') {
       document.body.classList.add('page-open');
       if (page === 'history') document.body.classList.add('page-history');
@@ -1897,7 +2079,9 @@
     const history = document.getElementById('historySection');
     const historyMount = document.getElementById('historyMount');
     if (history) history.style.display = 'none';
-    if (page === 'stats') {
+    if (page === 'inventory') {
+      renderInventoryPage(host);
+    } else if (page === 'stats') {
       const values = [
         ['العينات المكتملة', document.getElementById('sumCompletedCount')?.textContent || '0 / 6'],
         ['متوسط النتيجة النهائية', document.getElementById('sumAvgResult')?.textContent || '—'],
