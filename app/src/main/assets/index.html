@@ -1076,8 +1076,7 @@
   }
 
   function deleteInventoryItem(id) {
-    if (getInventoryMovements(id).length) { showToast('لا يمكن حذف قطعة لها سحوبات مسجلة؛ احتفظ بسجلها'); return; }
-    if (!confirm('هل تريد حذف هذه القطعة من مخزون الذهب؟')) return;
+    if (!confirm('تحذير: سيتم حذف قطعة المخزون وجميع سجلات السحب المرتبطة بها نهائيًا. هل تريد المتابعة؟')) return;
     inventoryItems = inventoryItems.filter(x => x.id !== id);
     saveInventoryToStorage(); renderInventoryPage(document.getElementById('featureContent')); refreshInventorySelectors();
     showToast('تم حذف القطعة');
